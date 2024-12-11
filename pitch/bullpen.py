@@ -109,9 +109,8 @@ select_date = st.sidebar.multiselect(
 
 st.title(f'{select_pitcher} 투구 대시보드')
 
-def track(Pitcher, Date, Batter, Inning, Pa, Pitch):
-    pdata = data.loc[(data.Pitcher == Pitcher) & (data.Date.isin(Date)) & (data.Batter.isin(Batter)) &
-                     (data.Inning.isin(Inning)) & (data.이닝타석.isin(Pa)) & (data.타석투구.isin(Pitch))]
+def track(Pitcher, Date):
+    pdata = data.loc[(data.Pitcher == Pitcher) & (data.Date.isin(Date))]
 
     table = pdata.groupby('구종')[['Date', '구속', '회전수', '회전축', '수직 무브먼트', '수평 무브먼트', '릴리스 높이', '릴리스 사이드', '익스텐션']].agg({'Date': 'count', '구속': ['mean', 'max'], '회전수': 'mean', '회전축':'mean',
     '수직 무브먼트': 'mean', '수평 무브먼트': 'mean', '릴리스 높이': 'mean', '릴리스 사이드': 'mean', '익스텐션': 'mean'}).dropna().round(1)
@@ -140,9 +139,8 @@ def track(Pitcher, Date, Batter, Inning, Pa, Pitch):
     
     return table
 
-def movement(Pitcher, Date, Batter, Inning, Pa, Pitch):
-    pdata = data.loc[(data.Pitcher == Pitcher) & (data.Date.isin(Date)) & (data.Batter.isin(Batter)) &
-                     (data.Inning.isin(Inning)) & (data.이닝타석.isin(Pa)) & (data.타석투구.isin(Pitch))]
+def movement(Pitcher, Date):
+    pdata = data.loc[(data.Pitcher == Pitcher) & (data.Date.isin(Date))]
     pdata = pdata.sort_values(by=['구종'])
 
     fig = px.scatter(data_frame=pdata, 
@@ -165,9 +163,8 @@ def movement(Pitcher, Date, Batter, Inning, Pa, Pitch):
 
     return fig
 
-def release(Pitcher, Date, Batter, Inning, Pa, Pitch):
-    pdata = data.loc[(data.Pitcher == Pitcher) & (data.Date.isin(Date)) & (data.Batter.isin(Batter)) &
-                     (data.Inning.isin(Inning)) & (data.이닝타석.isin(Pa)) & (data.타석투구.isin(Pitch))]
+def release(Pitcher, Date):
+    pdata = data.loc[(data.Pitcher == Pitcher) & (data.Date.isin(Date))]
     pdata = pdata.sort_values(by=['구종'])
 
     fig = px.scatter(data_frame=pdata, 
@@ -190,8 +187,7 @@ def release(Pitcher, Date, Batter, Inning, Pa, Pitch):
     return fig
 
 def location(Pitcher, Date, Batter, Inning, Pa, Pitch):
-    pdata = data.loc[(data.Pitcher == Pitcher) & (data.Date.isin(Date)) & (data.Batter.isin(Batter)) &
-                     (data.Inning.isin(Inning)) & (data.이닝타석.isin(Pa)) & (data.타석투구.isin(Pitch))]
+    pdata = data.loc[(data.Pitcher == Pitcher) & (data.Date.isin(Date))]
     pdata = pdata.sort_values(by=['구종'])
     
     L, R = -0.708333 * 30.48, +0.708333 * 30.48
