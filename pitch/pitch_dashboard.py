@@ -46,7 +46,7 @@ conditions_batterside = [
 ]
 choices_batterside = ['우', '좌']
 
-data['BatterSide'] = np.select(conditions_batterside, choices_batterside)
+data['BatterSide'] = np.select(conditions_batterside, choices_batterside, default="Unknown").astype(object)
 
 order_batterside = ['우', '좌']
 
