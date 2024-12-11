@@ -142,11 +142,6 @@ select_Pitch = st.sidebar.multiselect(
 
 if not select_Pitch:
     select_Pitch = data.타석투구.unique()
-    
-# 초기화 함수 정의
-def reset_state():
-    for key in st.session_state.keys():
-        del st.session_state[key]
 
 st.title(f'{select_pitcher} 투구 대시보드')
 
