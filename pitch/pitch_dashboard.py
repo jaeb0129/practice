@@ -28,7 +28,7 @@ conditions = [
 ]
 choices = ['직구', '싱커', '커터', '슬라이더', '체인지업', '스플리터', '커브', '너클']
 
-data['AutoPitchType'] = np.select(conditions, choices)
+data['AutoPitchType'] = np.select(conditions, choices, default="Unknown").astype(object)
 
 order = ['직구', '싱커', '커터', '슬라이더', '체인지업', '스플리터', '커브', '너클']
 
