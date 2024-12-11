@@ -186,7 +186,7 @@ def release(Pitcher, Date):
 
     return fig
 
-def location(Pitcher, Date, Batter, Inning, Pa, Pitch):
+def location(Pitcher, Date):
     pdata = data.loc[(data.Pitcher == Pitcher) & (data.Date.isin(Date))]
     pdata = pdata.sort_values(by=['구종'])
     
