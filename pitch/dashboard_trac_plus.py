@@ -120,7 +120,7 @@ select_date = st.sidebar.multiselect(
 
 st.title(f'{select_pitcher} 투구 대시보드')
 
-def track(Pitcher, Date, Batter, Inning, Pa, Pitch):
+def track(Pitcher, Date):
     pdata = data.loc[(data.Pitcher == Pitcher) & (data.Date.isin(Date))]
 
     table = pdata.groupby('구종')[['Date', '구속', '회전수', '회전축', '수직 무브먼트', '수평 무브먼트', '릴리스 높이', '릴리스 사이드', '익스텐션']].agg({'Date': 'count', '구속': ['mean', 'max'], '회전수': 'mean', '회전축':'mean',
