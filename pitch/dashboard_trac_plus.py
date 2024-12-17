@@ -12,7 +12,8 @@ import os
 import plotly.express as px
 import plotly.graph_objects as go
 #data = pd.read_csv(r'D:\jaebeom.soon\Desktop\aa\example.csv', encoding='cp949')
-data = pd.read_csv('https://raw.githubusercontent.com/jaeb0129/practice/refs/heads/master/pitch/example.CSV', encoding='cp949')
+#data = pd.read_csv('https://raw.githubusercontent.com/jaeb0129/practice/refs/heads/master/pitch/example.CSV', encoding='cp949')
+data = pd.read_csv('https://raw.githubusercontent.com/jaeb0129/python/refs/heads/main/%EC%97%B0%EC%8A%B5/example.CSV', encoding='cp949')
 #os.chdir(r'C:\Users\jaebeom.soon')
 
 data['y0'] = 50
