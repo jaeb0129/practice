@@ -333,7 +333,7 @@ result_table = track(select_pitcher, select_date)
 result_movement = movement(select_pitcher, select_date)
 result_rlse_point = release(select_pitcher, select_date)
 result_location = location(select_pitcher, select_date)
-result_pitch_trajectories = plot_pitch_trajectories(pitcher, dict_colour)
+result_pitch_trajectories = plot_pitch_trajectories(select_pitcher, select_date)
 
 st.plotly_chart(result_movement)
 st.plotly_chart(result_rlse_point)
