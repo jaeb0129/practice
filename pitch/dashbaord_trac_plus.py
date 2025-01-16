@@ -219,12 +219,18 @@ def location(Pitcher, Date):
                y = '수직 로케이션',
                color = '구종',
                color_discrete_map=dict_colour,
-               facet_row="타자유형",
-               facet_col="구종",
-               hover_data = ['구속', '회전수', '투구결과', '타구결과', '이닝타석', '타석투구', 'Balls', 'Strikes'])
+               facet_col = '구종',
+               hover_data = ['구속', '회전수'])
     
-    fig.update_layout(width=3000,
-                      height=500)
+    fig.update_layout(
+    width=1000,
+    height=300,
+    plot_bgcolor='white')
+    
+    # Facet 제목 스타일 조정
+    annotations = fig['layout']['annotations']  # 모든 annotations 가져오기
+    for annotation in annotations:
+        annotation['font'] = dict(size=16, family='Arial', weight='bold')  # Facet 제목 크기 및 스타일 변경
     
     fig.add_shape(type ='rect',
                   x0 = L, y0 = Bot,
@@ -234,7 +240,7 @@ def location(Pitcher, Date):
                   opacity = 0.5, row="all", col="all")
     fig.update_xaxes(range=[L-(2.5*30.48), R+(2.5*30.48)])
     fig.update_yaxes(range=[Bot-(3*30.48), Top+(2*30.48)])
-    fig.add_trace(go.Scatter(x=[R_m, L_p, L_m, Center, R_p, R_m], y=[S_height, S_height, M_height, E_height, M_height, S_height], showlegend=False), row="all", col="all")
+    fig.add_trace(go.Scatter(x=[R_m, L_p, L_m, Center, R_p, R_m], y=[S_height, S_height, M_height, E_height, M_height, S_height], showlegend=False, marker_color = 'black'), row = 'all', col="all")
     return fig
 
 def get_position_at_time(x0, ax0, vx0, y0, ay0, vy0, z0, az0, vz0, t):
