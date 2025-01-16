@@ -237,6 +237,15 @@ def location(Pitcher, Date):
     fig.add_trace(go.Scatter(x=[R_m, L_p, L_m, Center, R_p, R_m], y=[S_height, S_height, M_height, E_height, M_height, S_height], showlegend=False), row="all", col="all")
     return fig
 
+def get_position_at_time(x0, ax0, vx0, y0, ay0, vy0, z0, az0, vz0, t):
+    """
+    주어진 시간 t에서 x, y, z 위치를 계산하는 함수
+    """
+    x = x0 + vx0 * t + 0.5 * ax0 * t**2
+    y = y0 + vy0 * t + 0.5 * ay0 * t**2
+    z = z0 + vz0 * t + 0.5 * az0 * t**2
+    return {'x': x, 'y': y, 'z': z}
+
 def pitchloc(t, x0, ax0, vx0, y0, ay0, vy0, z0, az0, vz0):
     """
     Calculates the location (x, y, z) of the pitch at a given time t.
@@ -268,8 +277,8 @@ def pitch_trajectory(x0, ax0, vx0, y0, ay0, vy0, z0, az0, vz0, interval=0.001):
     
     return tracking
 
-def plot_pitch_trajectories(Pitcher, Date):
-    pdata = data.loc[(data.Pitcher == Pitcher) & (data.Date.isin(Date))]
+def plot_pitch_trajectories(Pitcher, Date, time_points=[0.213, 0.100]):
+    pdata = data.loc[(data.Pitcher == Pitcher) & (data.Date.isin([Date]))]
     pdata = pdata.reset_index()
     pdata = pdata.sort_values(by=['구종'])
     
@@ -296,7 +305,7 @@ def plot_pitch_trajectories(Pitcher, Date):
             x=trajectory['x'], y=trajectory['y'], z=trajectory['z'],
             mode='lines',
             name=f"{pitch_type} (Pitch {i+1})",  # 구종 뒤에 투구 번호 추가
-            line=dict(color=color, width=4)
+            line=dict(color=color, width=4), visible='legendonly'
         ))
 
     # 홈플레이트 영역 추가
@@ -324,7 +333,7 @@ def plot_pitch_trajectories(Pitcher, Date):
             x=zone['x'], y=zone['y'], z=zone['z'],
             mode='lines',
             name=key,
-            line=dict(width=3, color=zone['color'])
+            line=dict(width=3, color=zone['color']), showlegend=False
         ))
 
     # 레이아웃 설정
@@ -337,11 +346,29 @@ def plot_pitch_trajectories(Pitcher, Date):
             zaxis=dict(range=[0, 8])
         ),
         title="투구 궤적",
-        legend_title="구종",
+        legend_title="구종"
     )
+    
+    # 특정 초에 점 추가
+    for i, row in pdata.iterrows():
+        pitch_type = row['구종']
+        for t in time_points:
+            point_position = get_position_at_time(
+            row['x0'], row['ax0'], row['vx0'],
+            row['y0'], row['ay0'], row['vy0'],
+            row['z0'], row['az0'], row['vz0'], t)
+            fig.add_trace(go.Scatter3d(
+                x=[point_position['x']],
+                y=[point_position['y']],
+                z=[point_position['z']],
+                mode='markers',
+                name=f"{pitch_type} Pitch {i+1}, Point at {t}s ",
+                marker=dict(color='black', size=2, symbol='circle'), visible='legendonly'
+            ))
 
     return fig
-
+# 100ms 380
+# 213ms 167 / 릴리스 포인트에서 흐른 초 기준
 result_table = track(select_pitcher, select_date)
 result_movement = movement(select_pitcher, select_date)
 result_rlse_point = release(select_pitcher, select_date)
