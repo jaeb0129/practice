@@ -15,7 +15,7 @@ import plotly.express as px
 st.title('2026시즌 프로젝션')
 #st.subheader('파일 업로드(.xlsx)')
 # uploaded_file = st.file_uploader(label = "파일 선택", type=["xlsx"])
-uploaded_file = pd.read_excel('https://raw.githubusercontent.com/jaeb0129/practice/refs/heads/master/projection/2026_team_projection.xlsx')
+uploaded_file = r'https://raw.githubusercontent.com/jaeb0129/practice/refs/heads/master/projection/2026_team_projection.xlsx'
 
 #df = pd.read_excel(r'D:\jaebeom.soon\Desktop\WAR\2026\2026 팀순위 프로젝션.xlsx', sheet_name='신인')
 #df
@@ -856,3 +856,4 @@ with tabs[11]:
     
     st.subheader('신규 외국인 선수 프로필')
     st.dataframe(df1)
+
