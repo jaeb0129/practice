@@ -638,47 +638,29 @@ function useStatsAPI(mlbId) {
       return { person, pitching, hitting };
     };
 
-    const base   = `https://statsapi.mlb.com/api/v1/people/${mlbId}`;
-    const stats  = `https://statsapi.mlb.com/api/v1/people/${mlbId}/stats`;
-
-    // WBC stats: /stats 직접 엔드포인트가 hydrate보다 신뢰성 높음
-    const wbcHitting  = `${stats}?stats=season&season=2026&sportId=51&group=hitting`;
-    const wbcPitching = `${stats}?stats=season&season=2026&sportId=51&group=pitching`;
-
-    const parseStatsEndpoint = (json, group) => {
-      // /stats 엔드포인트는 { stats: [{ splits: [...] }] } 구조
-      const splits = json?.stats?.[0]?.splits || [];
-      if (!splits.length) return null;
-      // 합산(누적) 데이터 — splits가 여러 팀이면 마지막(총합)
-      const yr = splits.find(s => !s.team) || splits[splits.length - 1];
-      return yr?.stat || null;
-    };
+    const base = `https://statsapi.mlb.com/api/v1/people/${mlbId}`;
 
     Promise.all([
-      // MLB 정규시즌 2025/2024 — hydrate 방식
+      // 2025 MLB 정규시즌
       fetch(`${base}?hydrate=stats(group=[hitting,pitching],type=season,season=2025),currentTeam`).then(r=>r.json()).catch(()=>null),
+      // 2024 MLB 정규시즌
       fetch(`${base}?hydrate=stats(group=[hitting,pitching],type=season,season=2024)`).then(r=>r.json()).catch(()=>null),
-      // WBC 2026 — /stats 직접 엔드포인트 (hitting / pitching 분리 요청)
-      fetch(wbcHitting).then(r=>r.json()).catch(()=>null),
-      fetch(wbcPitching).then(r=>r.json()).catch(()=>null),
-    ]).then(([j25, j24, jwbcH, jwbcP]) => {
+      // WBC 2026 (sportId=51: 국제대회)
+      fetch(`${base}?hydrate=stats(group=[hitting,pitching],type=season,season=2026,sportId=51)`).then(r=>r.json()).catch(()=>null),
+    ]).then(([j25, j24, jwbc]) => {
       const d25  = parseStats(j25,  "2025");
       const d24  = parseStats(j24,  "2024");
-      const person = d25?.person || d24?.person;
+      const dwbc = parseStats(jwbc, "2026 WBC");
+      const person = d25?.person || d24?.person || dwbc?.person;
       if (!person) return;
-
-      const wbcHitStat = parseStatsEndpoint(jwbcH, "hitting");
-      const wbcPitStat = parseStatsEndpoint(jwbcP, "pitching");
-
       const result = {
         person,
-        pitching2025: d25?.pitching || null,
-        hitting2025:  d25?.hitting  || null,
-        pitching2024: d24?.pitching || null,
-        hitting2024:  d24?.hitting  || null,
-        // WBC: stat 객체를 { stat } 형태로 통일
-        pitchingWBC: wbcPitStat ? { stat: wbcPitStat, season: "2026 WBC" } : null,
-        hittingWBC:  wbcHitStat ? { stat: wbcHitStat, season: "2026 WBC" } : null,
+        pitching2025: d25?.pitching   || null,
+        hitting2025:  d25?.hitting    || null,
+        pitching2024: d24?.pitching   || null,
+        hitting2024:  d24?.hitting    || null,
+        pitchingWBC:  dwbc?.pitching  || null,
+        hittingWBC:   dwbc?.hitting   || null,
         // 하위 호환
         pitching: d25?.pitching || d24?.pitching || null,
         hitting:  d25?.hitting  || d24?.hitting  || null,
@@ -779,48 +761,83 @@ function StatBadge({ label, value, highlight }) {
   );
 }
 
-// ── WBC 성적 카드 (MLB StatsAPI 실시간) ─────────────────────────────────────
-function WBCStatsCard({ player, apiWBC, statsLoading }) {
+// ── WBC 성적 카드 (API 실시간 우선, CSV fallback) ───────────────────────────
+function WBCStatsCard({ player, apiWBC }) {
   const p = player.isPitcher;
-  const liveSt = p ? apiWBC?.pitchingWBC?.stat : apiWBC?.hittingWBC?.stat;
 
-  if (statsLoading) return (
-    <div style={{background:"#1a1208",borderRadius:12,padding:"13px 16px",color:"#78350f",fontSize:13,display:"flex",alignItems:"center",gap:8,border:"1px solid rgba(180,83,9,0.2)"}}>
-      <span style={{animation:"spin 1s linear infinite",display:"inline-block"}}>⏳</span> WBC 성적 불러오는 중...
-    </div>
-  );
+  // API에서 받은 WBC 성적 우선
+  const liveP = apiWBC?.pitchingWBC;
+  const liveH = apiWBC?.hittingWBC;
+  const liveSt = p ? liveP?.stat : liveH?.stat;
 
-  if (!liveSt) return (
+  // CSV fallback
+  const ws = player.wbcStats || {};
+  const csvHasStats = p ? (ws.G > 0) : (ws.PA > 0);
+
+  if (liveSt) {
+    // API 실시간 데이터
+    return (
+      <div>
+        <div style={{background:"#b45309",color:"#fff",borderRadius:"10px 10px 0 0",padding:"9px 16px",fontWeight:800,fontSize:13,display:"flex",alignItems:"center",gap:8}}>
+          🏆 WBC 2026 성적
+          <span style={{fontSize:10,fontWeight:400,opacity:.8,background:"rgba(255,255,255,0.15)",borderRadius:4,padding:"1px 6px"}}>📡 실시간</span>
+        </div>
+        <div style={{background:"#0d1b3e",borderRadius:"0 0 10px 10px",padding:14,display:"grid",gridTemplateColumns:"repeat(8,1fr)",gap:6}}>
+          {p ? <>
+            <StatBadge label="G"    value={liveSt.gamesPitched}/>
+            <StatBadge label="GS"   value={liveSt.gamesStarted}/>
+            <StatBadge label="IP"   value={fmt1(liveSt.inningsPitched)}/>
+            <StatBadge label="ERA"  value={fmt2(liveSt.era)}  highlight={parseFloat(liveSt.era)<3}/>
+            <StatBadge label="WHIP" value={fmt2(liveSt.whip)} highlight={parseFloat(liveSt.whip)<1}/>
+            <StatBadge label="K%"   value={liveSt.strikeoutPercentage ? liveSt.strikeoutPercentage+"%" : liveSt.strikeOuts&&liveSt.battersFaced ? (liveSt.strikeOuts/liveSt.battersFaced*100).toFixed(1)+"%" : "-"} highlight/>
+            <StatBadge label="BB%"  value={liveSt.walkPercentage ? liveSt.walkPercentage+"%" : liveSt.baseOnBalls&&liveSt.battersFaced ? (liveSt.baseOnBalls/liveSt.battersFaced*100).toFixed(1)+"%" : "-"}/>
+            <StatBadge label="SO"   value={liveSt.strikeOuts}/>
+          </> : <>
+            <StatBadge label="PA"  value={liveSt.plateAppearances}/>
+            <StatBadge label="H"   value={liveSt.hits}/>
+            <StatBadge label="HR"  value={liveSt.homeRuns}  highlight={liveSt.homeRuns>0}/>
+            <StatBadge label="RBI" value={liveSt.rbi}/>
+            <StatBadge label="AVG" value={fmt3(liveSt.avg)} highlight={parseFloat(liveSt.avg)>0.3}/>
+            <StatBadge label="OBP" value={fmt3(liveSt.obp)}/>
+            <StatBadge label="BB"  value={liveSt.baseOnBalls}/>
+            <StatBadge label="SB"  value={liveSt.stolenBases} highlight={liveSt.stolenBases>0}/>
+          </>}
+        </div>
+      </div>
+    );
+  }
+
+  // CSV fallback
+  if (!csvHasStats) return (
     <div style={{background:"#162040",borderRadius:12,padding:"12px 16px",color:"#475569",fontSize:13}}>
-      🏟️ WBC 2026 출전 기록 없음
+      🏟️ WBC 출전 기록 없음
     </div>
   );
-
   return (
     <div>
       <div style={{background:"#b45309",color:"#fff",borderRadius:"10px 10px 0 0",padding:"9px 16px",fontWeight:800,fontSize:13,display:"flex",alignItems:"center",gap:8}}>
         🏆 WBC 2026 성적
-        <span style={{fontSize:10,fontWeight:400,opacity:.8,background:"rgba(255,255,255,0.2)",borderRadius:4,padding:"1px 6px"}}>📡 실시간</span>
+        <span style={{fontSize:10,fontWeight:400,opacity:.8,background:"rgba(255,255,255,0.15)",borderRadius:4,padding:"1px 6px"}}>CSV</span>
       </div>
       <div style={{background:"#0d1b3e",borderRadius:"0 0 10px 10px",padding:14,display:"grid",gridTemplateColumns:"repeat(8,1fr)",gap:6}}>
         {p ? <>
-          <StatBadge label="G"    value={liveSt.gamesPitched}/>
-          <StatBadge label="GS"   value={liveSt.gamesStarted}/>
-          <StatBadge label="IP"   value={fmt1(liveSt.inningsPitched)}/>
-          <StatBadge label="ERA"  value={fmt2(liveSt.era)}   highlight={parseFloat(liveSt.era) < 3}/>
-          <StatBadge label="WHIP" value={fmt2(liveSt.whip)}  highlight={parseFloat(liveSt.whip) < 1}/>
-          <StatBadge label="K%"   value={liveSt.battersFaced > 0 ? (liveSt.strikeOuts / liveSt.battersFaced * 100).toFixed(1) + "%" : "-"} highlight/>
-          <StatBadge label="BB%"  value={liveSt.battersFaced > 0 ? (liveSt.baseOnBalls / liveSt.battersFaced * 100).toFixed(1) + "%" : "-"}/>
-          <StatBadge label="SO"   value={liveSt.strikeOuts}/>
+          <StatBadge label="G"    value={ws.G}/>
+          <StatBadge label="GS"   value={ws.GS}/>
+          <StatBadge label="IP"   value={ws.IP}/>
+          <StatBadge label="ERA"  value={ws.ERA!=null?fmt2(ws.ERA):"-"} highlight={ws.ERA!=null&&ws.ERA<3}/>
+          <StatBadge label="WHIP" value={ws.WHIP!=null?fmt2(ws.WHIP):"-"} highlight={ws.WHIP!=null&&ws.WHIP<1}/>
+          <StatBadge label="K%"   value={ws.Kpct!=null?ws.Kpct+"%":"-"} highlight={ws.Kpct>25}/>
+          <StatBadge label="BB%"  value={ws.BBpct!=null?ws.BBpct+"%":"-"}/>
+          <StatBadge label="SO"   value={ws.SO}/>
         </> : <>
-          <StatBadge label="PA"  value={liveSt.plateAppearances}/>
-          <StatBadge label="H"   value={liveSt.hits}/>
-          <StatBadge label="HR"  value={liveSt.homeRuns}    highlight={liveSt.homeRuns > 0}/>
-          <StatBadge label="RBI" value={liveSt.rbi}/>
-          <StatBadge label="AVG" value={fmt3(liveSt.avg)}   highlight={parseFloat(liveSt.avg) > 0.3}/>
-          <StatBadge label="OBP" value={fmt3(liveSt.obp)}/>
-          <StatBadge label="BB"  value={liveSt.baseOnBalls}/>
-          <StatBadge label="SB"  value={liveSt.stolenBases} highlight={liveSt.stolenBases > 0}/>
+          <StatBadge label="PA"  value={ws.PA}/>
+          <StatBadge label="H"   value={ws.H}/>
+          <StatBadge label="HR"  value={ws.HR} highlight={ws.HR>0}/>
+          <StatBadge label="RBI" value={ws.RBI}/>
+          <StatBadge label="AVG" value={ws.AVG!=null?fmt3(ws.AVG):"-"} highlight={ws.AVG>0.3}/>
+          <StatBadge label="OBP" value={ws.OBP!=null?fmt3(ws.OBP):"-"}/>
+          <StatBadge label="BB"  value={ws.BB}/>
+          <StatBadge label="SB"  value={ws.SB} highlight={ws.SB>0}/>
         </>}
       </div>
     </div>
@@ -1014,7 +1031,7 @@ function PlayerModal({ player, onClose }) {
 
         <div style={{padding:22,display:"flex",flexDirection:"column",gap:16}}>
           {/* WBC 2026 성적 — API 실시간 우선 */}
-          <WBCStatsCard player={player} apiWBC={data} statsLoading={statsLoading}/>
+          <WBCStatsCard player={player} apiWBC={data}/>
 
           {/* MLB StatsAPI 실시간 — data를 위에서 받아 내려줌 */}
           <LiveStatsCard player={player} data={data} loading={statsLoading}/>
@@ -1170,18 +1187,6 @@ export default function App() {
               ))}
             </div>
 
-            {/* 안내 박스 */}
-            <div style={{background:"#0f2a1a",border:"1px solid rgba(16,185,129,0.3)",borderRadius:12,padding:"12px 16px",marginBottom:20,display:"flex",gap:12,alignItems:"flex-start"}}>
-              <span style={{fontSize:20}}>🤖</span>
-              <div>
-                <div style={{fontWeight:800,fontSize:13,color:"#34d399",marginBottom:4}}>AI 코멘트 & 실시간 데이터 안내</div>
-                <div style={{fontSize:12,color:"#6ee7b7",lineHeight:1.7}}>
-                  <b>선수 데이터 출처:</b> ① WBC 2026 공식 성적 (MLB StatsAPI 실시간) ② MLB 정규시즌 성적 (2025/2024) ③ 관련 기사 (웹 검색)<br/>
-                  선수 클릭 → WBC 실시간 성적 + MLB 시즌 성적 + 관련 기사 헤드라인이 자동으로 표시됩니다.
-                </div>
-              </div>
-            </div>
-
             {/* Pool별 팀 */}
             {Object.entries(WBC_POOLS).map(([poolName,poolData])=>(
               <div key={poolName} style={{marginBottom:26}}>
@@ -1242,7 +1247,7 @@ export default function App() {
       </main>
 
       <div style={{background:"#0f1629",color:"#334155",padding:"10px 20px",fontSize:11,textAlign:"center",borderTop:"1px solid rgba(255,255,255,0.04)"}}>
-        출처: MLB StatsAPI (WBC 2026 실시간 · 정규시즌 2025/2024) · 총 {ALL_PLAYERS.length}명
+        출처: WBC 2026 공식 통계 CSV · MLB StatsAPI · Claude AI 코멘트 · 총 {ALL_PLAYERS.length}명 (파나마 제외 CSV 기준)
       </div>
 
       {selectedPlayer && <PlayerModal player={selectedPlayer} onClose={()=>setSelectedPlayer(null)}/>}
