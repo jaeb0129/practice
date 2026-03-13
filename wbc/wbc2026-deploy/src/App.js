@@ -1170,6 +1170,18 @@ export default function App() {
               ))}
             </div>
 
+            {/* 안내 박스 */}
+            <div style={{background:"#0f2a1a",border:"1px solid rgba(16,185,129,0.3)",borderRadius:12,padding:"12px 16px",marginBottom:20,display:"flex",gap:12,alignItems:"flex-start"}}>
+              <span style={{fontSize:20}}>🤖</span>
+              <div>
+                <div style={{fontWeight:800,fontSize:13,color:"#34d399",marginBottom:4}}>AI 코멘트 & 실시간 데이터 안내</div>
+                <div style={{fontSize:12,color:"#6ee7b7",lineHeight:1.7}}>
+                  <b>선수 데이터 출처:</b> ① WBC 2026 공식 성적 (MLB StatsAPI 실시간) ② MLB 정규시즌 성적 (2025/2024) ③ 관련 기사 (웹 검색)<br/>
+                  선수 클릭 → WBC 실시간 성적 + MLB 시즌 성적 + 관련 기사 헤드라인이 자동으로 표시됩니다.
+                </div>
+              </div>
+            </div>
+
             {/* Pool별 팀 */}
             {Object.entries(WBC_POOLS).map(([poolName,poolData])=>(
               <div key={poolName} style={{marginBottom:26}}>
@@ -1228,6 +1240,10 @@ export default function App() {
           </div>
         )}
       </main>
+
+      <div style={{background:"#0f1629",color:"#334155",padding:"10px 20px",fontSize:11,textAlign:"center",borderTop:"1px solid rgba(255,255,255,0.04)"}}>
+        출처: MLB StatsAPI (WBC 2026 실시간 · 정규시즌 2025/2024) · 총 {ALL_PLAYERS.length}명
+      </div>
 
       {selectedPlayer && <PlayerModal player={selectedPlayer} onClose={()=>setSelectedPlayer(null)}/>}
     </div>
