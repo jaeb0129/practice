@@ -1170,18 +1170,6 @@ export default function App() {
               ))}
             </div>
 
-            {/* 안내 박스 */}
-            <div style={{background:"#0f2a1a",border:"1px solid rgba(16,185,129,0.3)",borderRadius:12,padding:"12px 16px",marginBottom:20,display:"flex",gap:12,alignItems:"flex-start"}}>
-              <span style={{fontSize:20}}>🤖</span>
-              <div>
-                <div style={{fontWeight:800,fontSize:13,color:"#34d399",marginBottom:4}}>AI 코멘트 & 실시간 데이터 안내</div>
-                <div style={{fontSize:12,color:"#6ee7b7",lineHeight:1.7}}>
-                  <b>선수 리포트 출처:</b> ① WBC 2026 공식 성적 (CSV 실제 데이터) ② MLB StatsAPI 최신 시즌 성적 ③ Claude AI가 두 데이터를 종합해 한국어 해설 코멘트 자동 생성<br/>
-                  선수 클릭 → WBC 실제 성적 + MLB 실시간 성적 + AI 해설 코멘트가 자동으로 표시됩니다.
-                </div>
-              </div>
-            </div>
-
             {/* Pool별 팀 */}
             {Object.entries(WBC_POOLS).map(([poolName,poolData])=>(
               <div key={poolName} style={{marginBottom:26}}>
@@ -1240,10 +1228,6 @@ export default function App() {
           </div>
         )}
       </main>
-
-      <div style={{background:"#0f1629",color:"#334155",padding:"10px 20px",fontSize:11,textAlign:"center",borderTop:"1px solid rgba(255,255,255,0.04)"}}>
-        출처: WBC 2026 공식 통계 CSV · MLB StatsAPI · Claude AI 코멘트 · 총 {ALL_PLAYERS.length}명 (파나마 제외 CSV 기준)
-      </div>
 
       {selectedPlayer && <PlayerModal player={selectedPlayer} onClose={()=>setSelectedPlayer(null)}/>}
     </div>
