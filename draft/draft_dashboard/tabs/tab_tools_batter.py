@@ -441,14 +441,7 @@ def render(players_df: pd.DataFrame, p_tools_df, b_tools_df: pd.DataFrame):
             b_tools_df = _calc_flags(b_tools_df)
         grade_df = _build_grade(b_tools_df)
  
-    # ── 프로필 병합 ────────────────────────────────────────────────────────────
-    profile_cols = [c for c in ["tm_player_id","player_name","kor_teamname","pos_eng"]
-                    if c in players_df.columns]
-    display_df = pd.merge(
-        grade_df,
-        players_df[profile_cols],
-        left_on="BatterId", right_on="tm_player_id", how="left"
-    )
+    display_df = grade_df
     # fallback
     if "player_name"  not in display_df.columns: display_df["player_name"]  = display_df["Batter"]
     if "kor_teamname" not in display_df.columns: display_df["kor_teamname"] = "—"

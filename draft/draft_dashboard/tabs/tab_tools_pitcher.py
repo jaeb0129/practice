@@ -511,14 +511,7 @@ def render(players_df: pd.DataFrame, p_tools_df: pd.DataFrame, b_tools_df):
         st.warning(f"조건을 만족하는 투수가 없습니다. (최소 {MIN_PITCHES}구)")
         return
 
-    # ── 프로필 병합 ────────────────────────────────────────────────────────────
-    prof_cols = [c for c in ["tm_player_id","player_name","kor_teamname","pos_eng"]
-                 if c in players_df.columns]
-    display_df = pd.merge(
-        grade_df,
-        players_df[prof_cols],
-        left_on="PitcherId", right_on="tm_player_id", how="left",
-    )
+    display_df = grade_df
 
     # ── PitcherThrows: Right/Left → 우투/좌투, 순서 고정 ─────────────────────
     if "PitcherThrows" in p_tools_df.columns:

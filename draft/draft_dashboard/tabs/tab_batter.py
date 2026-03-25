@@ -2,10 +2,12 @@ import streamlit as st
 import pandas as pd
 from utils import load_raw
 
-def render(data):
+data_pit, data_bat = load_raw()
+
+def render(data, profile):
     st.markdown('<p class="section-title">타자 데이터</p>', unsafe_allow_html=True)
     
-    b_data = data
+    b_data = data_bat
     b_data = b_data[b_data["kor_teamname"].notna()]
     
     # ── 필터 ──
