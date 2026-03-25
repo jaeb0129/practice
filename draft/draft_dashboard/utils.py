@@ -24,7 +24,7 @@ def load_raw():
     
     FILE_HS = "HS.csv"
     FILE_MASTER = "마스터정보.csv"
-    FOLDER_ID = None
+    FOLDER_ID = "광주"
 
 
     # ==============================
