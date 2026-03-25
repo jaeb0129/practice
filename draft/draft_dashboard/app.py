@@ -250,13 +250,13 @@ st.markdown("""
 
 # ── 데이터 로드 ────────────────────────────────────────────────────────────
 
-
-from data import tracking_pitcher, tracking_batter_discipline, tracking_batter_hitrack
-from mock_draft_tab import render_mock_draft_tab
 from utils import load_raw
+from data import tracking_pitcher, tracking_batter_discipline, player_master, tracking_batter_hitrack
+from mock_draft_tab import render_mock_draft_tab
 
 p_tools_df, b_tools_df = load_raw()
 
+# 4. 가공 데이터 생성 (탭에서 쓰는 변수들)
 pitchers      = tracking_pitcher()
 batters_dis   = tracking_batter_discipline()
 batter_hitrack = tracking_batter_hitrack()
@@ -301,13 +301,13 @@ with tab_player_batter:
 with tab_tools:
     # 투수 툴
     from tabs.tab_tools_pitcher import render as render_pitcher_tools
-    render_pitcher_tools(master, p_tools_df, b_tools_df)
+    render_pitcher_tools(p_tools_df, b_tools_df)
 
     st.divider()
 
     # 타자 툴
     from tabs.tab_tools_batter import render as render_batter_tools
-    render_batter_tools(master, p_tools_df, b_tools_df)
+    render_batter_tools(p_tools_df, b_tools_df)
 
 # ══════════════════════════════════════════════════════
 # TAB 5 : 구종 평가

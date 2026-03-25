@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from app import load_raw
+from utils import load_raw
 
 data_pit, data_bat = load_raw()
 
