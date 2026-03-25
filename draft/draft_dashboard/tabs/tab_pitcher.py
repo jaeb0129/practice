@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
+from utils import load_raw
 
-#pd.merge(hs25, master.loc[:,['tm_player_id','player_name', 'player_backno', 'kor_teamname'] ],  left_on='PitcherId', right_on='tm_player_id', how='left')
-
+data_pit, data_bat = load_raw()
 
 def render(data, profile):
     st.markdown('<p class="section-title">투수 데이터</p>', unsafe_allow_html=True)
