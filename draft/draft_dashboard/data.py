@@ -1,6 +1,3 @@
-import os
-os.chdir(r'C:\Users\jaeb0\Desktop\draft_dashboard')
-
 import pandas as pd
 import numpy as np
 
@@ -243,11 +240,6 @@ def tracking_batter_discipline():
     stats["BatterSide"], categories=["우타", "좌타"], ordered=True)
     
     return stats
-
-def player_master():
-    hs25 = data_bat
-    return master
-
 
 def tracking_batter_hitrack():
     hs25 = data_bat
