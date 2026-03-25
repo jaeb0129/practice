@@ -251,7 +251,7 @@ st.markdown("""
 # ── 데이터 로드 ────────────────────────────────────────────────────────────
 
 
-from data import tracking_pitcher, tracking_batter_discipline, player_master, tracking_batter_hitrack
+from data import tracking_pitcher, tracking_batter_discipline, tracking_batter_hitrack
 from mock_draft_tab import render_mock_draft_tab
 
 @st.cache_data
