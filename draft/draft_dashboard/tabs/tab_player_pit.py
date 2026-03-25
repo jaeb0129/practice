@@ -10,7 +10,7 @@ import numpy as np
 import os
 import plotly.express as px
 import plotly.graph_objects as go
-from app import load_raw
+from utils import load_raw
 
 data_pit, data_bat = load_raw()
 
