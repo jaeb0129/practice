@@ -6,8 +6,6 @@ Created on Thu Mar 26 02:04:53 2026
 """
 
 import streamlit as st
-from googleapiclient.discovery import build
-from google.oauth2 import service_account
 import io
 
 @st.cache_data
