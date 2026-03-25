@@ -4,10 +4,10 @@ from utils import load_raw
 
 data_pit, data_bat = load_raw()
 
-def render(data, profile):
+def render(data):
     st.markdown('<p class="section-title">투수 데이터</p>', unsafe_allow_html=True)
     
-    p_data = data_pit
+    p_data = data
 
     # ── 필터 ──
     st.markdown('<div class="filter-bar">', unsafe_allow_html=True)
