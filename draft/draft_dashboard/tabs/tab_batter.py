@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from app import load_raw
+from utils import load_raw
 
 data_pit, data_bat = load_raw()
 
