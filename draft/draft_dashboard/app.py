@@ -257,6 +257,10 @@ from utils import load_raw
 
 p_tools_df, b_tools_df = load_raw()
 
+pitchers      = tracking_pitcher()
+batters_dis   = tracking_batter_discipline()
+batter_hitrack = tracking_batter_hitrack()
+
 # ── 탭 ─────────────────────────────────────────────────────────────────────
 tab_pitcher, tab_batter, tab_player_pitcher, tab_player_batter, tab_tools, tab_ptype, tab_draft = st.tabs([
     "🔴 투수 비교", "🟢 타자 비교", "⚪ 투수 트래킹", "🔵 타자 트래킹", "📊 툴 평가", "⚾︎ 구종 평가", "📥모의 드래프트"
@@ -267,18 +271,18 @@ tab_pitcher, tab_batter, tab_player_pitcher, tab_player_batter, tab_tools, tab_p
 # ══════════════════════════════════════════════════════
 with tab_pitcher:
     from tabs.tab_pitcher import render
-    render(pitchers, master)
+    render(pitchers)
 
 # ══════════════════════════════════════════════════════
 # TAB 2 : 타자
 # ══════════════════════════════════════════════════════
 with tab_batter:
     from tabs.tab_batter import render
-    render(batters_dis, master)
+    render(batters_dis)
     
 with tab_batter:
     from tabs.tab_batter import render2
-    render2(batter_hitrack, master)
+    render2(batter_hitrack)
 
 # ══════════════════════════════════════════════════════
 # TAB 3 : 선수
