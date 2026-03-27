@@ -250,6 +250,9 @@ st.markdown("""
 
 # ── 데이터 로드 ────────────────────────────────────────────────────────────
 
+
+import os
+os.chdir(r"D:\jaebeom.soon\Desktop\draft_dashboard")
 from data import tracking_pitcher, tracking_batter_discipline, player_master, tracking_batter_hitrack
 from mock_draft_tab import render_mock_draft_tab
 import db_func as dbf
@@ -277,11 +280,11 @@ def load_raw():
     rslt = dbf.get_sql("""select * from hs_data""")
     master = dbf.get_sql("""select * from hs_profile""")
     
-    data_pit = pd.merge(rslt, master.loc[:,['tm_player_id','player_name', 'player_backno', 'kor_teamname'] ],  left_on='PitcherId', right_on='tm_player_id', how='left')
-    data_bat = pd.merge(rslt, master.loc[:,['tm_player_id','player_name', 'player_backno', 'kor_teamname'] ],  left_on='BatterId', right_on='tm_player_id', how='left')
+    data_pit = pd.merge(rslt, master.loc[:,['PLER_ID','PLER_NAME_KOR', 'BKNO', 'TEAM_NM'] ],  left_on='PitcherId', right_on='PLER_ID', how='left')
+    data_bat = pd.merge(rslt, master.loc[:,['PLER_ID','PLER_NAME_KOR', 'BKNO', 'TEAM_NM'] ],  left_on='BatterId', right_on='PLER_ID', how='left')
     
-    data_pit["name_bk"] = data_pit["player_name"] + "_" + data_pit["player_backno"]
-    data_bat["name_bk"] = data_bat["player_name"] + "_" + data_bat["player_backno"]
+    data_pit["name_bk"] = data_pit["PLER_NAME_KOR"] + "_" + data_pit["BKNO"]
+    data_bat["name_bk"] = data_bat["PLER_NAME_KOR"] + "_" + data_bat["BKNO"]
     
     return data_pit, data_bat
 

@@ -4,13 +4,13 @@ import pandas as pd
 def render(data, profile):
     st.markdown('<p class="section-title">투수 데이터</p>', unsafe_allow_html=True)
     
-    p_data = pd.merge(data, profile.loc[:,['tm_player_id','player_name', 'player_backno', 'kor_teamname'] ], left_on='PitcherId', right_on='tm_player_id', how='left')
+    p_data = pd.merge(data, profile.loc[:,['PLER_ID','PLER_NAME_KOR', 'BKNO', 'TEAM_NM'] ], left_on='PitcherId', right_on='PLER_ID', how='left')
 
     # ── 필터 ──
     st.markdown('<div class="filter-bar">', unsafe_allow_html=True)
     col1, col2, col3 = st.columns([2, 2, 1])
     with col1:
-        school_opts = ["전체"] + sorted(profile["kor_teamname"].unique().tolist())
+        school_opts = ["전체"] + sorted(profile["TEAM_NM"].unique().tolist())
         school_sel = st.selectbox("학교 필터", school_opts, key="p_school")
     with col2:
         min_p = int(p_data["투구수"].min())
@@ -22,14 +22,14 @@ def render(data, profile):
 
     df = p_data.copy()
     if school_sel != "전체":
-        df = df[df["kor_teamname"] == school_sel]
+        df = df[df["TEAM_NM"] == school_sel]
     df = df[df["투구수"] >= pitch_range]
 
     # ── 메인 테이블 ──
     st.markdown('<p class="section-title">투수 타석 접근법</p>', unsafe_allow_html=True)
     col_map = {
-    "player_name":  "선수명",
-    "kor_teamname": "학교",
+    "PLER_NAME_KOR":  "선수명",
+    "TEAM_NM": "학교",
     "PitcherThrows": "투구손",
     "투구수":        "투구수",
     "타석":          "타석",

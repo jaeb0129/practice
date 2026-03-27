@@ -275,17 +275,17 @@ def _render_radar(grade_df: pd.DataFrame, display_df: pd.DataFrame):
 
     c1, c2 = st.columns([2, 5])
     with c1:
-        school_opts = ["전체"] + sorted(display_df["kor_teamname"].dropna().unique().tolist())
+        school_opts = ["전체"] + sorted(display_df["TEAM_NM"].dropna().unique().tolist())
         school_sel  = st.selectbox("학교 필터", school_opts, key="tools_r_school")
  
     filtered = display_df.copy()
     if school_sel != "전체":
-        filtered = filtered[filtered["kor_teamname"] == school_sel]
+        filtered = filtered[filtered["TEAM_NM"] == school_sel]
         
  
     with c2:
         player_map = {
-            row["BatterId"]: f"{row['player_name']}  ({row.get('kor_teamname', '—')})"
+            row["BatterId"]: f"{row['PLER_NAME_KOR']}  ({row.get('TEAM_NM', '—')})"
             for _, row in filtered.iterrows()
         }
         # 이름 기준으로 오름차순 정렬
@@ -313,8 +313,8 @@ def _render_radar(grade_df: pd.DataFrame, display_df: pd.DataFrame):
     for i, pid in enumerate(selected):
         row  = grade_df[grade_df["BatterId"] == pid].iloc[0]
         prow = display_df[display_df["BatterId"] == pid].iloc[0]
-        name  = prow.get("player_name", row["Batter"])
-        team  = prow.get("kor_teamname", "—")
+        name  = prow.get("PLER_NAME_KOR", row["Batter"])
+        team  = prow.get("TEAM_NM", "—")
         color = _COLORS[i % len(_COLORS)]
  
         tool_html = "".join([
@@ -375,28 +375,23 @@ def _render_radar(grade_df: pd.DataFrame, display_df: pd.DataFrame):
 def _render_table(grade_df: pd.DataFrame, display_df: pd.DataFrame):
     _sec("전체 선수 종합 성적표  ·  인플레이 10회 이상")
  
-    c1, c2, c3 = st.columns([2, 2, 1])
+    c1, c2 = st.columns([2, 2])
     with c1:
-        opts       = ["전체"] + sorted(display_df["kor_teamname"].dropna().unique().tolist())
+        opts       = ["전체"] + sorted(display_df["TEAM_NM"].dropna().unique().tolist())
         school_sel = st.selectbox("학교 필터", opts, key="tools_t_school")
     with c2:
         min_pa = int(display_df["PA"].min())
         max_pa = int(display_df["PA"].max())
         pa_min = st.slider("최소 타석수", min_pa, max_pa, min_pa, key="tools_t_pa")
-    with c3:
-        pos_filter = st.selectbox("포지션", ["전체", "IF", "OF", "C", "P"], key="tools_t_pos")
  
     df = display_df.copy()
     if school_sel != "전체":
-        df = df[df["kor_teamname"] == school_sel]
-    if pos_filter != "전체" and "pos_eng" in df.columns:
-        df = df[df["pos_eng"] == pos_filter]
+        df = df[df["TEAM_NM"] == school_sel]
     df = df[df["PA"] >= pa_min].sort_values("Grade", ascending=False)
  
     col_map = {
         "player_name":            "선수명",
-        "kor_teamname":           "학교",
-        "pos_eng":                "포지션",
+        "TEAM_NM":           "학교",
         "PA":                     "타석",
         "INPLAY":                 "인플레이",
         "HardHit%":               "HardHit%",
@@ -451,17 +446,16 @@ def render(players_df: pd.DataFrame, p_tools_df, b_tools_df: pd.DataFrame):
         grade_df = _build_grade(b_tools_df)
  
     # ── 프로필 병합 ────────────────────────────────────────────────────────────
-    profile_cols = [c for c in ["tm_player_id","player_name","kor_teamname","pos_eng"]
+    profile_cols = [c for c in ["PLER_ID","PLER_NAME_KOR","TEAM_NM"]
                     if c in players_df.columns]
     display_df = pd.merge(
         grade_df,
         players_df[profile_cols],
-        left_on="BatterId", right_on="tm_player_id", how="left"
+        left_on="BatterId", right_on="PLER_ID", how="left"
     )
     # fallback
-    if "player_name"  not in display_df.columns: display_df["player_name"]  = display_df["Batter"]
-    if "kor_teamname" not in display_df.columns: display_df["kor_teamname"] = "—"
-    if "pos_eng"      not in display_df.columns: display_df["pos_eng"]      = "—"
+    if "PLER_NAME_KOR"  not in display_df.columns: display_df["PLER_NAME_KOR"]  = display_df["Batter"]
+    if "TEAM_NM" not in display_df.columns: display_df["TEAM_NMe"] = "—"
  
     # ── 서브탭 ────────────────────────────────────────────────────────────────
     sub1, sub2 = st.tabs(["📡  레이더 차트", "📋  전체 성적표"])

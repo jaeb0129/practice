@@ -243,16 +243,16 @@ def _render_radar(grade_df: pd.DataFrame, display_df: pd.DataFrame):
 
     c1, c2 = st.columns([2, 5])
     with c1:
-        school_opts = ["전체"] + sorted(display_df["kor_teamname"].dropna().unique().tolist())
+        school_opts = ["전체"] + sorted(display_df["TEAM_NM"].dropna().unique().tolist())
         school_sel  = st.selectbox("학교 필터", school_opts, key="pt_r_school")
 
     filtered = display_df.copy()
     if school_sel != "전체":
-        filtered = filtered[filtered["kor_teamname"] == school_sel]
+        filtered = filtered[filtered["TEAM_NM"] == school_sel]
 
     with c2:
         player_map  = {
-            row["PitcherId"]: f"{row['player_name']}  ({row.get('kor_teamname','—')})"
+            row["PitcherId"]: f"{row['PLER_NAME_KOR']}  ({row.get('TEAM_NM','—')})"
             for _, row in filtered.iterrows()
         }
         sorted_keys = sorted(player_map.keys(), key=lambda x: player_map[x])
@@ -286,8 +286,8 @@ def _render_radar(grade_df: pd.DataFrame, display_df: pd.DataFrame):
     for i, pid in enumerate(selected):
         row  = grade_df[grade_df["PitcherId"] == pid].iloc[0]
         prow = display_df[display_df["PitcherId"] == pid].iloc[0]
-        name  = prow.get("player_name", row["Pitcher"])
-        team  = prow.get("kor_teamname", "—")
+        name  = prow.get("PLER_NAME_KOR", row["Pitcher"])
+        team  = prow.get("TEAM_NM", "—")
         color = _PLAYER_COLORS[i % len(_PLAYER_COLORS)]
 
         stuff_html = "".join([
@@ -390,7 +390,7 @@ def _render_table(grade_df: pd.DataFrame, display_df: pd.DataFrame):
 
     c1, c2, c3 = st.columns([2, 2, 1])
     with c1:
-        opts       = ["전체"] + sorted(display_df["kor_teamname"].dropna().unique().tolist())
+        opts       = ["전체"] + sorted(display_df["TEAM_NM"].dropna().unique().tolist())
         school_sel = st.selectbox("학교 필터", opts, key="pt_t_school")
     with c2:
         min_p = int(display_df["Pitches"].min())
@@ -407,14 +407,14 @@ def _render_table(grade_df: pd.DataFrame, display_df: pd.DataFrame):
 
     df = display_df.copy()
     if school_sel != "전체":
-        df = df[df["kor_teamname"] == school_sel]
+        df = df[df["TEAM_NM"] == school_sel]
     if hand_sel != "전체" and "PitcherThrows" in df.columns:
         df = df[df["PitcherThrows"] == hand_sel]
     df = df[df["Pitches"] >= p_min].sort_values("Grade", ascending=False)
 
     col_map = {
-        "player_name":   "선수명",
-        "kor_teamname":  "학교",
+        "PLER_NAME_KOR":   "선수명",
+        "TEAM_NM":  "학교",
         "PitcherThrows": "투구손",
         "Pitches":       "투구수",
         "AvgVelo":       "평균구속(FB)",
@@ -473,12 +473,12 @@ def _render_table(grade_df: pd.DataFrame, display_df: pd.DataFrame):
 
     # ── 하단 주석 박스 ────────────────────────────────────────────────────────
     if "_imputed" in show_df.columns:
-        imp_src = df[["player_name", "imputed_cols"]].reset_index(drop=True)
+        imp_src = df[["PLER_NAME_KOR", "imputed_cols"]].reset_index(drop=True)
         imp_src = imp_src[imp_src["imputed_cols"].str.len() > 0]
         if not imp_src.empty:
             items = "".join([
                 f'<div style="margin:.15rem 0;font-size:.78rem">'
-                f'<span style="color:#fbbf24;font-weight:600">{row["player_name"]}</span>'
+                f'<span style="color:#fbbf24;font-weight:600">{row["PLER_NAME_KOR"]}</span>'
                 f'<span style="color:#6b7280"> — </span>'
                 f'<span style="color:#9ca3af">'
                 + ", ".join(f'{lbl}*' for lbl in row["imputed_cols"].split(", ")) +
@@ -512,12 +512,12 @@ def render(players_df: pd.DataFrame, p_tools_df: pd.DataFrame, b_tools_df):
         return
 
     # ── 프로필 병합 ────────────────────────────────────────────────────────────
-    prof_cols = [c for c in ["tm_player_id","player_name","kor_teamname","pos_eng"]
+    prof_cols = [c for c in ["PLER_ID",'PLER_NAME_KOR',"TEAM_NM"]
                  if c in players_df.columns]
     display_df = pd.merge(
         grade_df,
         players_df[prof_cols],
-        left_on="PitcherId", right_on="tm_player_id", how="left",
+        left_on="PitcherId", right_on="PLER_ID", how="left",
     )
 
     # ── PitcherThrows: Right/Left → 우투/좌투, 순서 고정 ─────────────────────
@@ -534,8 +534,8 @@ def render(players_df: pd.DataFrame, p_tools_df: pd.DataFrame, b_tools_df):
         display_df = pd.merge(display_df, hand, on="PitcherId", how="left")
 
     # fallback
-    if "player_name"  not in display_df.columns: display_df["player_name"]  = display_df["Pitcher"]
-    if "kor_teamname" not in display_df.columns: display_df["kor_teamname"] = "—"
+    if "PLER_NAME_KOR"  not in display_df.columns: display_df["PLER_NAME_KOR"]  = display_df["Pitcher"]
+    if "TEAM_NM" not in display_df.columns: display_df["TEAM_NM"] = "—"
 
     # ── 서브탭 ────────────────────────────────────────────────────────────────
     sub1, sub2 = st.tabs(["📡  레이더 차트", "📋  전체 성적표"])

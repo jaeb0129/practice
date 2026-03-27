@@ -4,14 +4,14 @@ import pandas as pd
 def render(data, profile):
     st.markdown('<p class="section-title">타자 데이터</p>', unsafe_allow_html=True)
     
-    b_data = pd.merge(data, profile.loc[:,['tm_player_id','player_name', 'player_backno', 'kor_teamname', 'pos_eng'] ], left_on='BatterId', right_on='tm_player_id', how='left')
-    b_data = b_data[b_data["kor_teamname"].notna()]
+    b_data = pd.merge(data, profile.loc[:,['PLER_ID','PLER_NAME_KOR', 'BKNO', 'TEAM_NM'] ], left_on='BatterId', right_on='PLER_ID', how='left')
+    b_data = b_data[b_data["TEAM_NM"].notna()]
     
     # ── 필터 ──
     st.markdown('<div class="filter-bar">', unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([2, 2, 1])
+    col1, col2 = st.columns([2, 2])
     with col1:
-        school_opts = ["전체"] + sorted(b_data["kor_teamname"].unique().tolist())
+        school_opts = ["전체"] + sorted(b_data["TEAM_NM"].unique().tolist())
         school_sel = st.selectbox("학교 필터", school_opts, key="b_school")
     with col2:
         min_pa = int(b_data["타석"].min())
@@ -21,27 +21,21 @@ def render(data, profile):
         #min_bip = int(b_data["인플레이수"].min())
         #max_bip = int(b_data["인플레이수"].max())
         #bip_min = st.slider("최소 인플레이수", min_bip, max_bip, min_bip, key="b_bip")
-    with col3:
-        st.markdown("<br>", unsafe_allow_html=True)
-        pos_filter = st.selectbox("포지션", ["전체", "IF", "OF", "C", "P"], key="b_pos")
     st.markdown('</div>', unsafe_allow_html=True)
 
     df = b_data.copy()
     if school_sel != "전체":
-        df = df[df["kor_teamname"] == school_sel]
-    if pos_filter != "전체":
-        df = df[df["pos_eng"] == pos_filter]
+        df = df[df["TEAM_NM"] == school_sel]
     df = df[(df["타석"] >= pa_min)]
 
     # ── 메인 테이블 ──
     st.markdown('<p class="section-title">타자 타석 접근법</p>', unsafe_allow_html=True)
     
-    display_cols = ["player_name", "kor_teamname", "pos_eng", "BatterSide", "투구수", "타석", "타석당투구수", "BB%", "K%", "초구반응%", "반응%", "헛스윙%", "컨택%", "컨택%(2S)", "컨택%(145이상)", "존반응%", "존밖반응%", "존컨택%", "존밖컨택%"]
+    display_cols = ["PLER_NAME_KOR", "TEAM_NM", "BTER_LNR", "투구수", "타석", "타석당투구수", "BB%", "K%", "초구반응%", "반응%", "헛스윙%", "컨택%", "컨택%(2S)", "컨택%(145이상)", "존반응%", "존밖반응%", "존컨택%", "존밖컨택%"]
     show_df = df[display_cols].copy()
     col_map = {
-    "player_name":   "선수명",
-    "kor_teamname":  "학교",
-    "pos_eng":       "포지션",
+    "PLER_NAME_KOR":   "선수명",
+    "TEAM_NM":  "학교",
     "BatterSide":   "타석방향",
     "투구수":         "투구수",
     "타석":           "타석",
@@ -96,14 +90,14 @@ def render(data, profile):
 def render2(data, profile):
     st.markdown('<p class="section-title">타자 데이터</p>', unsafe_allow_html=True)
     
-    b_data = pd.merge(data, profile.loc[:,['tm_player_id','player_name', 'player_backno', 'kor_teamname', 'pos_eng']], left_on='BatterId', right_on='tm_player_id', how='left')
-    b_data = b_data[b_data["kor_teamname"].notna()]
+    b_data = pd.merge(data, profile.loc[:,['PLER_ID','PLER_NAME_KOR', 'BKNO', 'TEAM_NM']], left_on='BatterId', right_on='PLER_ID', how='left')
+    b_data = b_data[b_data["TEAM_NM"].notna()]
     
     # ── 필터 ──
     st.markdown('<div class="filter-bar">', unsafe_allow_html=True)
-    col1, col2, col3, col4 = st.columns([2, 2, 2, 1])
+    col1, col2, col3 = st.columns([2, 2, 2])
     with col1:
-        school_opts = ["전체"] + sorted(b_data["kor_teamname"].unique().tolist())
+        school_opts = ["전체"] + sorted(b_data["TEAM_NM"].unique().tolist())
         school_sel = st.selectbox("학교 필터", school_opts, key="b_school2")
     with col2:
         min_pa = int(b_data["타석"].min())
@@ -113,24 +107,18 @@ def render2(data, profile):
         min_bip = int(b_data["인플레이"].min())
         max_bip = int(b_data["인플레이"].max())
         bip_min = st.slider("최소 인플레이수", min_bip, max_bip, min_bip, key="b_bip")
-    with col4:
-        st.markdown("<br>", unsafe_allow_html=True)
-        pos_filter = st.selectbox("포지션", ["전체", "IF", "OF", "C", "P"], key="b_pos2")
     st.markdown('</div>', unsafe_allow_html=True)
 
     df = b_data.copy()
     if school_sel != "전체":
-        df = df[df["kor_teamname"] == school_sel]
-    if pos_filter != "전체":
-        df = df[df["pos_eng"] == pos_filter]
+        df = df[df["TEAM_NM"] == school_sel]
     df = df[(df["타석"] >= pa_min) & (df["인플레이"] >= bip_min)]
 
     st.markdown('<p class="section-title">타자 타구 트래킹</p>', unsafe_allow_html=True)
 
     col_map = {
-        "player_name":  "선수명",
-        "kor_teamname": "학교",
-        "pos_eng":      "포지션",
+        "PLER_NAME_KOR":  "선수명",
+        "TEAM_NM": "학교",
         "BatterSide":   "타석방향",
         "투구수":        "투구수",
         "타석":          "타석",

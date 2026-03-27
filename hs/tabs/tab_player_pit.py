@@ -17,7 +17,7 @@ def render():
     rslt = dbf.get_sql("""select * from hs_data""")
     master = dbf.get_sql("""select * from hs_profile""")
     
-    data = pd.merge(hs25, master.loc[:,['tm_player_id','player_name', 'player_backno', 'kor_teamname'] ],  left_on='PitcherId', right_on='tm_player_id', how='left')
+    data = pd.merge(hs25, master.loc[:,['PLER_ID','PLER_NAME_KOR', 'BKNO', 'TEAM_NM'] ],  left_on='PitcherId', right_on='PLER_ID', how='left')
     # 구종
     conditions = [
         (data['AutoPitchType'] == 'Four-Seam'),
@@ -82,12 +82,10 @@ def render():
     dict_colour = dict(zip(pitch_colours.keys(), [pitch_colours[key]['colour'] for key in pitch_colours]))
 
 
-    data["name_bk"] = data["player_name"] + "_" + data["player_backno"]
+    data["name_bk"] = data["PLER_NAME_KOR"] + "_" + data["BKNO"]
 
-    # 사이드바에 select box를 활용하여 종을 선택한 다음 그에 해당하는 행만 추출하여 데이터프레임을 만들고자합니다.
     st.sidebar.title('투수')
 
-    # select_species 변수에 사용자가 선택한 값이 지정됩니다
 
     select_school = st.sidebar.selectbox(
         '확인하고 싶은 학교를 선택하세요',
@@ -107,7 +105,7 @@ def render():
     st.title(f'{select_pitcher} 투구 대시보드')
 
     def track(Pitcher, School, Date):
-        pdata = data.loc[(data.name_bk == Pitcher) & (data.Date.isin(Date)) & (data.kor_teamname == School)]
+        pdata = data.loc[(data.name_bk == Pitcher) & (data.Date.isin(Date)) & (data.TEAM_NM == School)]
 
         table = pdata.groupby('구종')[['Date', '구속', '회전수', '회전축', '수직 무브먼트', '수평 무브먼트', '릴리스 높이', '릴리스 사이드', '익스텐션']].agg({'Date': 'count', '구속': ['mean', 'max'], '회전수': 'mean', '회전축':'mean',
         '수직 무브먼트': 'mean', '수평 무브먼트': 'mean', '릴리스 높이': 'mean', '릴리스 사이드': 'mean', '익스텐션': 'mean'}).dropna().round(1)
@@ -137,7 +135,7 @@ def render():
         return table
 
     def movement(Pitcher, School, Date):
-        pdata = data.loc[(data.name_bk == Pitcher) & (data.Date.isin(Date)) & (data.kor_teamname == School)]
+        pdata = data.loc[(data.name_bk == Pitcher) & (data.Date.isin(Date)) & (data.TEAM_NM == School)]
         pdata = pdata.sort_values(by=['구종'])
 
         order = ['직구', '싱커', '커터', '슬라이더', '체인지업', '스플리터', '커브', '너클']
@@ -196,7 +194,7 @@ def render():
         return fig
 
     def location(Pitcher, School, Date):
-        pdata = data.loc[(data.name_bk == Pitcher) & (data.Date.isin(Date)) & (data.kor_teamname == School)]
+        pdata = data.loc[(data.name_bk == Pitcher) & (data.Date.isin(Date)) & (data.TEAM_NM == School)]
         pdata = pdata.sort_values(by=['구종'])
         
         L, R = -0.708333 * 30.48, +0.708333 * 30.48
