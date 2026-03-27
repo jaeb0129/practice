@@ -250,9 +250,6 @@ st.markdown("""
 
 # ── 데이터 로드 ────────────────────────────────────────────────────────────
 
-
-import os
-os.chdir(r"D:\jaebeom.soon\Desktop\draft_dashboard")
 from data import tracking_pitcher, tracking_batter_discipline, player_master, tracking_batter_hitrack
 from mock_draft_tab import render_mock_draft_tab
 import db_func as dbf
