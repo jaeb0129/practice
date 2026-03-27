@@ -4,12 +4,12 @@ import pandas as pd
 def render(data, profile):
     st.markdown('<p class="section-title">타자 데이터</p>', unsafe_allow_html=True)
     
-    b_data = pd.merge(data, profile.loc[:,['PLER_ID','PLER_NAME_KOR', 'BKNO', 'TEAM_NM'] ], left_on='BatterId', right_on='PLER_ID', how='left')
+    b_data = pd.merge(data, profile.loc[:,['PLER_TRKNG_ID','PLER_NAME', 'BKNO', 'TEAM_NM'] ], left_on='BatterId', right_on='PLER_TRKNG_ID', how='left')
     b_data = b_data[b_data["TEAM_NM"].notna()]
     
     # ── 필터 ──
     st.markdown('<div class="filter-bar">', unsafe_allow_html=True)
-    col1, col2 = st.columns([2, 2])
+    col1, col2, col3 = st.columns([2, 2, 1])
     with col1:
         school_opts = ["전체"] + sorted(b_data["TEAM_NM"].unique().tolist())
         school_sel = st.selectbox("학교 필터", school_opts, key="b_school")
@@ -17,24 +17,23 @@ def render(data, profile):
         min_pa = int(b_data["타석"].min())
         max_pa = int(b_data["타석"].max())
         pa_min = st.slider("최소 타석수", min_pa, max_pa, min_pa, key="b_pa")
-   # with col3:
-        #min_bip = int(b_data["인플레이수"].min())
-        #max_bip = int(b_data["인플레이수"].max())
-        #bip_min = st.slider("최소 인플레이수", min_bip, max_bip, min_bip, key="b_bip")
+    with col3:
+        year_opts = ["전체"] + sorted(b_data["year"].unique().tolist())
+        year_sel = st.selectbox("연도 필터", year_opts, key="b_year")
     st.markdown('</div>', unsafe_allow_html=True)
 
     df = b_data.copy()
     if school_sel != "전체":
-        df = df[df["TEAM_NM"] == school_sel]
+        df = df[(df["TEAM_NM"] == school_sel) & (df["year"] == year__sel)]
     df = df[(df["타석"] >= pa_min)]
 
     # ── 메인 테이블 ──
     st.markdown('<p class="section-title">타자 타석 접근법</p>', unsafe_allow_html=True)
     
-    display_cols = ["PLER_NAME_KOR", "TEAM_NM", "BTER_LNR", "투구수", "타석", "타석당투구수", "BB%", "K%", "초구반응%", "반응%", "헛스윙%", "컨택%", "컨택%(2S)", "컨택%(145이상)", "존반응%", "존밖반응%", "존컨택%", "존밖컨택%"]
+    display_cols = ["PLER_NAME", "TEAM_NM", "BatterSide", "투구수", "타석", "타석당투구수", "BB%", "K%", "초구반응%", "반응%", "헛스윙%", "컨택%", "컨택%(2S)", "컨택%(145이상)", "존반응%", "존밖반응%", "존컨택%", "존밖컨택%"]
     show_df = df[display_cols].copy()
     col_map = {
-    "PLER_NAME_KOR":   "선수명",
+    "PLER_NAME":   "선수명",
     "TEAM_NM":  "학교",
     "BatterSide":   "타석방향",
     "투구수":         "투구수",
@@ -90,12 +89,12 @@ def render(data, profile):
 def render2(data, profile):
     st.markdown('<p class="section-title">타자 데이터</p>', unsafe_allow_html=True)
     
-    b_data = pd.merge(data, profile.loc[:,['PLER_ID','PLER_NAME_KOR', 'BKNO', 'TEAM_NM']], left_on='BatterId', right_on='PLER_ID', how='left')
+    b_data = pd.merge(data, profile.loc[:,['PLER_TRKNG_ID','PLER_NAME', 'BKNO', 'TEAM_NM']], left_on='BatterId', right_on='PLER_TRKNG_ID', how='left')
     b_data = b_data[b_data["TEAM_NM"].notna()]
     
     # ── 필터 ──
     st.markdown('<div class="filter-bar">', unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([2, 2, 2])
+    col1, col2, col3 = st.columns([2, 2, 1])
     with col1:
         school_opts = ["전체"] + sorted(b_data["TEAM_NM"].unique().tolist())
         school_sel = st.selectbox("학교 필터", school_opts, key="b_school2")
@@ -104,20 +103,19 @@ def render2(data, profile):
         max_pa = int(b_data["타석"].max())
         pa_min = st.slider("최소 타석수", min_pa, max_pa, min_pa, key="b_pa2")
     with col3:
-        min_bip = int(b_data["인플레이"].min())
-        max_bip = int(b_data["인플레이"].max())
-        bip_min = st.slider("최소 인플레이수", min_bip, max_bip, min_bip, key="b_bip")
+        year_opts = ["전체"] + sorted(b_data["year"].unique().tolist())
+        year_sel = st.selectbox("연도 필터", year_opts, key="b_year2")
     st.markdown('</div>', unsafe_allow_html=True)
 
     df = b_data.copy()
     if school_sel != "전체":
         df = df[df["TEAM_NM"] == school_sel]
-    df = df[(df["타석"] >= pa_min) & (df["인플레이"] >= bip_min)]
+    df = df[(df["타석"] >= pa_min)]
 
     st.markdown('<p class="section-title">타자 타구 트래킹</p>', unsafe_allow_html=True)
 
     col_map = {
-        "PLER_NAME_KOR":  "선수명",
+        "PLER_NAME":  "선수명",
         "TEAM_NM": "학교",
         "BatterSide":   "타석방향",
         "투구수":        "투구수",

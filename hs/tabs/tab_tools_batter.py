@@ -112,10 +112,10 @@ def _calc_flags(df: pd.DataFrame) -> pd.DataFrame:
  
 @st.cache_data(show_spinner=False)
 def _build_grade(raw: pd.DataFrame) -> pd.DataFrame:
-    """raw TrackMan → 선수별 Grade DataFrame 반환"""
+    """raw  → 선수별 Grade DataFrame 반환"""
     df = _calc_flags(raw)
  
-    g      = df.groupby(["BatterId", "Batter"])
+    g      = df.groupby(["year","BatterId", "Batter"])
     pa     = g["PA_CHECK"].sum()
     swing  = g["HIT_TRY_CHECK"].sum()
     inplay = g["INPLAY_CHECK"].sum()
@@ -135,19 +135,19 @@ def _build_grade(raw: pd.DataFrame) -> pd.DataFrame:
         "CHASE_CONTACT%": (g["CHASE_CONTACT_CHECK"].sum() / g["CHASE_CHECK"].sum()        * 100).round(1),
     }).reset_index()
  
-    res = res[res["INPLAY"] >= 10].copy()
+    res = res[res["INPLAY"] >= 0].copy()
  
     # 20-80 스케일
-    res["scale_hardhit"]       = _scale_20_80(res["HardHit%"]).round(0).astype(int)
-    res["scale_icr"]           = _scale_20_80(res["ICR%"]).round(0).astype(int)
-    res["scale_barrel"]        = _scale_20_80(res["BARREL%"]).round(0).astype(int)
-    res["scale_WHIFF%"]        = _reverse_scale_20_80(res["WHIFF%"]).round(0).astype(int)
-    res["scale_K%"]            = _reverse_scale_20_80(res["K%"]).round(0).astype(int)
-    res["scale_BB%"]           = _scale_20_80(res["BB%"]).round(0).astype(int)
-    res["scale_ZONE_SWING%"] = _scale_20_80(res["ZONE_SWING%"]).round(0).astype(int)
-    res["scale_ZONE_CONTACT%"] = _scale_20_80(res["ZONE_CONTACT%"]).round(0).astype(int)
-    res["scale_CHASE%"]        = _reverse_scale_20_80(res["CHASE%"]).round(0).astype(int)
-    res["scale_CHASE_CONTACT%"]= _scale_20_80(res["CHASE_CONTACT%"]).round(0).astype(int)
+    res["scale_hardhit"]       = _scale_20_80(res["HardHit%"]).round(0).replace([np.inf, -np.inf], np.nan).fillna(50).astype(int)
+    res["scale_icr"]           = _scale_20_80(res["ICR%"]).round(0).replace([np.inf, -np.inf], np.nan).fillna(50).astype(int)
+    res["scale_barrel"]        = _scale_20_80(res["BARREL%"]).round(0).replace([np.inf, -np.inf], np.nan).fillna(50).astype(int)
+    res["scale_WHIFF%"]        = _reverse_scale_20_80(res["WHIFF%"]).round(0).replace([np.inf, -np.inf], np.nan).fillna(50).astype(int)
+    res["scale_K%"]            = _reverse_scale_20_80(res["K%"]).round(0).replace([np.inf, -np.inf], np.nan).fillna(50).astype(int)
+    res["scale_BB%"]           = _scale_20_80(res["BB%"]).round(0).replace([np.inf, -np.inf], np.nan).fillna(50).astype(int)
+    res["scale_ZONE_SWING%"]   = _scale_20_80(res["ZONE_SWING%"]).round(0).replace([np.inf, -np.inf], np.nan).fillna(50).astype(int)
+    res["scale_ZONE_CONTACT%"] = _scale_20_80(res["ZONE_CONTACT%"]).round(0).replace([np.inf, -np.inf], np.nan).fillna(50).astype(int)
+    res["scale_CHASE%"]        = _reverse_scale_20_80(res["CHASE%"]).round(0).replace([np.inf, -np.inf], np.nan).fillna(50).astype(int)
+    res["scale_CHASE_CONTACT%"]= _scale_20_80(res["CHASE_CONTACT%"]).round(0).replace([np.inf, -np.inf], np.nan).fillna(50).astype(int)
  
     # Grade
     res["Grade_INPLAY"]           = ((res["scale_hardhit"] + res["scale_icr"]) / 2).round(0).astype(int)
@@ -272,20 +272,29 @@ def _render_radar(grade_df: pd.DataFrame, display_df: pd.DataFrame):
     _sec("타구 점수 = (하드힛 (HardHit) + 정타 (ICR)) / 2")
     
     _sec("선구 점수 = (컨택 (헛스윙↓) + 존밖 반응 + 존반응 / 3)")
+    
+    _sec("계산 불가시 50점 부여")
 
-    c1, c2 = st.columns([2, 5])
+    c1, c2, c3 = st.columns([1, 1, 3])
     with c1:
+        year_opts = ["전체"] + sorted(display_df["year"].unique().tolist())
+        year_sel = st.selectbox("연도 필터", year_opts, key="tools_r_year")
+        
+    filtered = display_df.copy()
+    if year_sel != "전체":
+        filtered = filtered[(filtered["year"] == year_sel)]
+        
+    with c2:
         school_opts = ["전체"] + sorted(display_df["TEAM_NM"].dropna().unique().tolist())
         school_sel  = st.selectbox("학교 필터", school_opts, key="tools_r_school")
- 
+    
     filtered = display_df.copy()
     if school_sel != "전체":
-        filtered = filtered[filtered["TEAM_NM"] == school_sel]
+        filtered = filtered[(filtered["TEAM_NM"] == school_sel)]
         
- 
-    with c2:
+    with c3:
         player_map = {
-            row["BatterId"]: f"{row['PLER_NAME_KOR']}  ({row.get('TEAM_NM', '—')})"
+            row["BatterId"]: f"{row['PLER_NAME']}  ({row.get('TEAM_NM', '—')})"
             for _, row in filtered.iterrows()
         }
         # 이름 기준으로 오름차순 정렬
@@ -313,7 +322,7 @@ def _render_radar(grade_df: pd.DataFrame, display_df: pd.DataFrame):
     for i, pid in enumerate(selected):
         row  = grade_df[grade_df["BatterId"] == pid].iloc[0]
         prow = display_df[display_df["BatterId"] == pid].iloc[0]
-        name  = prow.get("PLER_NAME_KOR", row["Batter"])
+        name  = prow.get("PLER_NAME", row["Batter"])
         team  = prow.get("TEAM_NM", "—")
         color = _COLORS[i % len(_COLORS)]
  
@@ -446,16 +455,16 @@ def render(players_df: pd.DataFrame, p_tools_df, b_tools_df: pd.DataFrame):
         grade_df = _build_grade(b_tools_df)
  
     # ── 프로필 병합 ────────────────────────────────────────────────────────────
-    profile_cols = [c for c in ["PLER_ID","PLER_NAME_KOR","TEAM_NM"]
+    profile_cols = [c for c in ["PLER_TRKNG_ID","PLER_NAME","TEAM_NM"]
                     if c in players_df.columns]
     display_df = pd.merge(
         grade_df,
         players_df[profile_cols],
-        left_on="BatterId", right_on="PLER_ID", how="left"
+        left_on="BatterId", right_on="PLER_TRKNG_ID", how="left"
     )
     # fallback
-    if "PLER_NAME_KOR"  not in display_df.columns: display_df["PLER_NAME_KOR"]  = display_df["Batter"]
-    if "TEAM_NM" not in display_df.columns: display_df["TEAM_NMe"] = "—"
+    if "PLER_NAME"  not in display_df.columns: display_df["PLER_NAME"]  = display_df["Batter"]
+    if "TEAM_NM" not in display_df.columns: display_df["TEAM_NM"] = "—"
  
     # ── 서브탭 ────────────────────────────────────────────────────────────────
     sub1, sub2 = st.tabs(["📡  레이더 차트", "📋  전체 성적표"])

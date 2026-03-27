@@ -250,6 +250,10 @@ st.markdown("""
 
 # ── 데이터 로드 ────────────────────────────────────────────────────────────
 
+
+import os
+os.chdir(r"D:\jaebeom.soon\Desktop\hs\hs")
+
 from data import tracking_pitcher, tracking_batter_discipline, player_master, tracking_batter_hitrack
 from mock_draft_tab import render_mock_draft_tab
 import db_func as dbf
@@ -259,6 +263,10 @@ def load_data():
     pitcher_df = tracking_pitcher()
     batter_discipline_df = tracking_batter_discipline()
     batter_hitrack_df = tracking_batter_hitrack()
+    
+    pitcher_df['PitcherId'] = pitcher_df['PitcherId'].astype(str)
+    batter_discipline_df['BatterId'] = batter_discipline_df['BatterId'].astype(str)
+    batter_hitrack_df['BatterId'] = batter_hitrack_df['BatterId'].astype(str)
 
     return pitcher_df, batter_discipline_df, batter_hitrack_df
 
@@ -267,21 +275,32 @@ pitchers, batters_dis, batter_hitrack = load_data()
 @st.cache_data
 def load_profile():
     master = dbf.get_sql("""select * from hs_profile""")
+    master = pd.DataFrame(master)
+    master['PLER_TRKNG_ID'] = master['PLER_TRKNG_ID'].astype(str)
     return master
 
 master = load_profile()
 
 @st.cache_data
 def load_raw():
-    # 데이터 추출
+
     rslt = dbf.get_sql("""select * from hs_data""")
+    rslt = pd.DataFrame(rslt)
     master = dbf.get_sql("""select * from hs_profile""")
+    master = pd.DataFrame(master)
     
-    data_pit = pd.merge(rslt, master.loc[:,['PLER_ID','PLER_NAME_KOR', 'BKNO', 'TEAM_NM'] ],  left_on='PitcherId', right_on='PLER_ID', how='left')
-    data_bat = pd.merge(rslt, master.loc[:,['PLER_ID','PLER_NAME_KOR', 'BKNO', 'TEAM_NM'] ],  left_on='BatterId', right_on='PLER_ID', how='left')
+    rslt['BatterId'] = rslt['BatterId'].astype(str)
+    rslt['PitcherId'] = rslt['PitcherId'].astype(str)
+    master['PLER_TRKNG_ID'] = master['PLER_TRKNG_ID'].astype(str)
     
-    data_pit["name_bk"] = data_pit["PLER_NAME_KOR"] + "_" + data_pit["BKNO"]
-    data_bat["name_bk"] = data_bat["PLER_NAME_KOR"] + "_" + data_bat["BKNO"]
+    data_pit = pd.merge(rslt, master.loc[:,['PLER_TRKNG_ID','PLER_NAME', 'BKNO', 'TEAM_NM']],  left_on='PitcherId', right_on='PLER_TRKNG_ID', how='left')
+    data_bat = pd.merge(rslt, master.loc[:,['PLER_TRKNG_ID','PLER_NAME', 'BKNO', 'TEAM_NM']],  left_on='BatterId', right_on='PLER_TRKNG_ID', how='left')
+    
+    data_pit["name_bk"] = data_pit["PLER_NAME"] + "_" + data_pit["BKNO"]
+    data_bat["name_bk"] = data_bat["PLER_NAME"] + "_" + data_bat["BKNO"]
+    
+    data_pit['year'] = pd.to_datetime(data_pit['Date'], errors='coerce').dt.year
+    data_bat['year'] = pd.to_datetime(data_bat['Date'], errors='coerce').dt.year
     
     return data_pit, data_bat
 

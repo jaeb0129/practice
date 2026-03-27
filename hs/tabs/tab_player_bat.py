@@ -16,35 +16,42 @@ import db_func as dbf
 def render():
     import db_func as dbf
     rslt = dbf.get_sql("""select * from hs_data""")
+    rslt = pd.DataFrame(rslt)
     master = dbf.get_sql("""select * from hs_profile""")
-
-    data = pd.merge(hs25, master.loc[:,['PLER_ID','PLER_NAME_KOR', 'BKNO', 'TEAM_NM']],
-                    left_on='BatterId', right_on='PLER_ID', how='left')
-    data["name_bk"] = data["PLER_NAME_KOR"] + "_" + data["BKNO"]
-
-    st.sidebar.title('타자')
-    select_school = st.sidebar.selectbox('확인하고 싶은 학교를 선택하세요',
-                                         sorted(data.TEAM_NM.dropna().unique()),
-                                         key="player_bat_school")
-    select_batter = st.sidebar.selectbox('확인하고 싶은 타자를 선택하세요',
-                                         sorted(data[data.TEAM_NM == select_school].name_bk.unique()),
-                                         key="player_bat_batter")
-    select_date   = st.sidebar.multiselect('확인하고 싶은 날짜를 선택하세요',
-                                           data[data.name_bk == select_batter].Date.unique(),
-                                           key="player_bat_date")
-
-    st.title(f'{select_batter} 타격 대시보드')
+    master = pd.DataFrame(master)
+    
+    rslt['BatterId'] = rslt['BatterId'].astype(str)
+    master['PLER_TRKNG_ID'] = master['PLER_TRKNG_ID'].astype(str)
 
     # ── 공통 전처리 (한 번만) ──────────────────────────────────────────────────
-    base = pd.merge(hs25, master.loc[:,['PLER_ID','PLER_NAME_KOR', 'BKNO', 'TEAM_NM']],
-                    left_on='BatterId', right_on='PLER_ID', how='left')
-    base = base[base["kor_teamname"].notna()]
-    base["name_bk"] = base["PLER_NAME_KOR"] + "_" + base["BKNO"]
+    base = pd.merge(rslt, master.loc[:,['PLER_TRKNG_ID','PLER_NAME', 'BKNO', 'TEAM_NM']],
+                    left_on='BatterId', right_on='PLER_TRKNG_ID', how='left')
+    base = base[base["TEAM_NM"].notna()]
+    base["name_bk"] = base["PLER_NAME"] + "_" + base["BKNO"]
+    base['year'] = pd.to_datetime(base['Date'], errors='coerce').dt.year
+
+    st.sidebar.title('타자')
+    select_year = st.sidebar.selectbox('확인하고 싶은 연도를 선택하세요',
+                                         sorted(base.year.dropna().unique()),
+                                         key="player_bat_year")
+    select_school = st.sidebar.selectbox('확인하고 싶은 학교를 선택하세요',
+                                         sorted(base[(base.year == select_year)].TEAM_NM.dropna().unique()),
+                                         key="player_bat_school")
+    select_batter = st.sidebar.selectbox('확인하고 싶은 타자를 선택하세요',
+                                         sorted(base[(base.year == select_year) & (base.TEAM_NM == select_school)].name_bk.unique()),
+                                         key="player_bat_batter")
+    select_date   = st.sidebar.multiselect('확인하고 싶은 날짜를 선택하세요',
+                                           base[(base.year == select_year) & (base.TEAM_NM == select_school) & (base.name_bk == select_batter)].Date.unique(),
+                                           key="player_bat_date")
+    
+
+    st.title(f'{select_batter} 타격 대시보드')
 
     # ── 선수/날짜 필터 ────────────────────────────────────────────────────────
     filtered = base.loc[(base.name_bk == select_batter) &
                         (base.Date.isin(select_date)) &
-                        (base.TEAM_NM == select_school)].copy()
+                        (base.TEAM_NM == select_school) &
+                        (base.year == select_year)].copy()
 
     # ── 내부 함수: 필터된 df 받아서 집계만 수행 ──────────────────────────────
     def tracking_batter_discipline(df):
@@ -72,7 +79,7 @@ def render():
         df["is_first_pitch"]       = ((df["Strikes"] == 0) & (df["Balls"] == 0)).astype(int)
         df["is_first_pitch_swing"] = ((df["Strikes"] == 0) & (df["Balls"] == 0) & (df["is_swing"] == 1)).astype(int)
 
-        result = (df.groupby(["BatterId",'PLER_NAME_KOR','TEAM_NM',,"BatterSide"])
+        result = (df.groupby(["BatterId",'PLER_NAME','TEAM_NM',"BatterSide"])
                   .agg(투구수=("PitchCall","count"), 타석=("is_pa","sum"),
                        반응=("is_swing","sum"), 초구반응=("is_first_pitch_swing","sum"),
                        초구=("is_first_pitch","sum"), whiffs=("is_whiff","sum"),
@@ -98,10 +105,10 @@ def render():
         result["존컨택%"]        = (result["z_contacts"] / result["z_swings"] * 100).round(1)
         result["존밖컨택%"]      = (result["o_contacts"] / result["o_swings"] * 100).round(1)
 
-        stats = result[['PLER_NAME_KOR','TEAM_NM',"BatterSide","투구수","타석",
+        stats = result[['PLER_NAME','TEAM_NM',"BatterSide","투구수","타석",
                          "타석당투구수","BB%","K%","초구반응%","반응%","헛스윙%","컨택%",
                          "컨택%(2S)","컨택%(145이상)","존반응%","존밖반응%","존컨택%","존밖컨택%"]]
-        stats = stats.rename(columns={'PLER_NAME_KOR':"선수명",'TEAM_NM':"학교",
+        stats = stats.rename(columns={'PLER_NAME':"선수명",'TEAM_NM':"학교",
                                        "BatterSide":"타석방향"})
         stats["타석방향"] = stats["타석방향"].map({"Right":"우타","Left":"좌타"})
         stats["타석방향"] = pd.Categorical(stats["타석방향"], categories=["우타","좌타"], ordered=True)
@@ -150,7 +157,7 @@ def render():
                            ((es>=169)&(ang>=18.8))|((es>=172.25)&(ang>=16.45))|((es>=175.5)&(ang>=14.1))|
                            ((es>=178.75)&(ang>=11.75))|((es>=182)&(ang>=9.4))).fillna(False).astype(int)
 
-        result = (df.groupby(["BatterId",'PLER_NAME_KOR','TEAM_NM',"BatterSide"])
+        result = (df.groupby(["BatterId",'PLER_NAME','TEAM_NM',"BatterSide"])
                   .agg(투구수=("PitchCall","count"), 타석=("is_pa","sum"),
                        인플레이=("is_inplay","sum"), 평균타구속도=("is_exitspeed","mean"),
                        평균발사각도=("is_angle","mean"), 최고비거리=("is_distance","max"), 하드힛=("is_hardhit","sum"),
@@ -172,9 +179,9 @@ def render():
         result["라인드라이브%"] = (result["라인드라이브"] / result["타구유형"] * 100).round(1)
         result["번트%"]         = (result["번트"]         / result["타구유형"] * 100).round(1)
 
-        stats = result[['PLER_NAME_KOR','TEAM_NM',,"BatterSide","투구수","타석","인플레이",
+        stats = result[['PLER_NAME','TEAM_NM',"BatterSide","투구수","타석","인플레이",
                          "평균타구속도","평균발사각도","최고비거리","하드힛%","정타%","배럴%","스윗스팟%","땅볼%","뜬공%","라인드라이브%","번트%"]]
-        stats = stats.rename(columns={"PLER_NAME_KOR":"선수명","TEAM_NM":"학교",
+        stats = stats.rename(columns={"PLER_NAME":"선수명","TEAM_NM":"학교",
                                        "BatterSide":"타석방향"})
         stats["타석방향"] = stats["타석방향"].map({"Right":"우타","Left":"좌타"})
         stats["타석방향"] = pd.Categorical(stats["타석방향"], categories=["우타","좌타"], ordered=True)

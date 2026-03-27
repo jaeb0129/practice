@@ -5,6 +5,11 @@ import db_func as dbf
 def tracking_pitcher():
     import db_func as dbf
     hs25 = dbf.get_sql("""select * from hs_data""")
+    hs25 = pd.DataFrame(hs25)
+    
+    hs25['year'] = pd.to_datetime(hs25['Date'], errors='coerce').dt.year
+    
+    hs25['PitcherId'] = hs25['PitcherId'].astype(str)
     
     hs25['Zone'] = ( (hs25["PlateLocHeight"] <= 1.07) &
                      (hs25["PlateLocHeight"] >= 0.43) &
@@ -53,7 +58,7 @@ def tracking_pitcher():
     hs25["is_lk_so"] = ((hs25["Strikes"] == 2) & (hs25["PitchCall"] == "StrikeCalled")).astype(int)
     
     result = (
-    hs25.groupby(["PitcherId", "Pitcher", "PitcherTeam", "PitcherThrows"])
+    hs25.groupby(['year', "PitcherId", "Pitcher", "PitcherTeam", "PitcherThrows"])
     .agg(
         투구수=("PitchCall", "count"),
         타석=("is_pa", "sum"),
@@ -111,7 +116,7 @@ def tracking_pitcher():
     filtered_df = hs25[hs25["AutoPitchType"].isin(['Four-Seam', 'Sinker'])]
 
     by_pitcher_fastball = (
-    filtered_df.groupby(["PitcherId", "Pitcher", "PitcherTeam"])
+    filtered_df.groupby(['year', "PitcherId", "Pitcher", "PitcherTeam"])
     .agg(
         직구최고구속=("RelSpeed", lambda x: round(x.max(), 1)),
         직구평균구속=("RelSpeed", lambda x: x.mean().round(1))
@@ -119,10 +124,11 @@ def tracking_pitcher():
     .reset_index()
     )
     
-    stats = pd.merge(result, by_pitcher_fastball, on=["PitcherId", "Pitcher", "PitcherTeam"], how="left")
+    stats = pd.merge(result, by_pitcher_fastball, on=['year',"PitcherId", "Pitcher", "PitcherTeam"], how="left")
     
-    stats = stats.loc[:,["PitcherId", "Pitcher", "PitcherTeam", "PitcherThrows", "투구수", "타석", "타석당투구수", "Zone%", "초구S%", "S%", 'CSW%', "BB%", "K%", "2S삼진결정%", "루킹삼진%", "헛스윙%", "반응%", "존반응%", "존밖반응%", "직구최고구속", "직구평균구속"]]
+    stats = stats.loc[:,['year', "PitcherId", "Pitcher", "PitcherTeam", "PitcherThrows", "투구수", "타석", "타석당투구수", "Zone%", "초구S%", "S%", 'CSW%', "BB%", "K%", "2S삼진결정%", "루킹삼진%", "헛스윙%", "반응%", "존반응%", "존밖반응%", "직구최고구속", "직구평균구속"]]
     
+    stats['PitcherId'] = stats['PitcherId'].astype(str)
     stats["PitcherThrows"] = stats["PitcherThrows"].map({"Right": "우투", "Left": "좌투"})
     stats["PitcherThrows"] = pd.Categorical(
         stats["PitcherThrows"], categories=["우투", "좌투"], ordered=True)
@@ -132,10 +138,10 @@ def tracking_pitcher():
 def tracking_batter_discipline():
     import db_func as dbf
     hs25 = dbf.get_sql("""select * from hs_data""")
+    hs25 = pd.DataFrame(hs25)
     
-    #hs25['PitchCall'].unique()
-    #hs25['PlayResult'].unique()
-    #hs25['KorBB'].unique()
+    hs25['year'] = pd.to_datetime(hs25['Date'], errors='coerce').dt.year
+    hs25['BatterId'] = hs25['BatterId'].astype(str)
     
     hs25['Zone'] = ( (hs25["PlateLocHeight"] <= 1.07) &
                      (hs25["PlateLocHeight"] >= 0.43) &
@@ -180,7 +186,7 @@ def tracking_batter_discipline():
     
     
     result = (
-    hs25.groupby(["BatterId", "Batter", "BatterTeam", "BatterSide"])
+    hs25.groupby(['year', "BatterId", "Batter", "BatterTeam", "BatterSide"])
     .agg(
         투구수=("PitchCall", "count"),
         타석=("is_pa", "sum"),
@@ -231,7 +237,7 @@ def tracking_batter_discipline():
     result["존컨택%"] = (result["z_contacts"] / result["z_swings"] * 100).round(1)
     result["존밖컨택%"] = (result["o_contacts"] / result["o_swings"] * 100).round(1)
     
-    stats = result.loc[:,["BatterId", "Batter", "BatterTeam", "BatterSide", "투구수", "타석", "타석당투구수", "BB%", "K%", "초구반응%", "반응%", "헛스윙%", "컨택%", "컨택%(2S)", "컨택%(145이상)", "존반응%", "존밖반응%", "존컨택%", "존밖컨택%"]]
+    stats = result.loc[:,['year', "BatterId", "Batter", "BatterTeam", "BatterSide", "투구수", "타석", "타석당투구수", "BB%", "K%", "초구반응%", "반응%", "헛스윙%", "컨택%", "컨택%(2S)", "컨택%(145이상)", "존반응%", "존밖반응%", "존컨택%", "존밖컨택%"]]
     
     stats = stats.rename(columns={
         "Batter":     "선수명",
@@ -247,12 +253,19 @@ def tracking_batter_discipline():
 def player_master():
     import db_func as dbf
     master = dbf.get_sql("""select * from hs_profile""")
+    master = pd.DataFrame(master)
+    master['PLER_TRKNG_ID'] = master['PLER_TRKNG_ID'].astype(str)
+    
     return master
 
 
 def tracking_batter_hitrack():
     import db_func as dbf
     hs25 = dbf.get_sql("""select * from hs_data""")
+    hs25 = pd.DataFrame(hs25)
+    
+    hs25['year'] = pd.to_datetime(hs25['Date'], errors='coerce').dt.year
+    hs25['BatterId'] = hs25['BatterId'].astype(str)
 
     hs25["is_pa"] = ((hs25["PlayResult"].isin(['Single', 'Double', 'Triple', 'HomeRun', 'Error',
                                                'FieldersChoice', 'Out', 'Sacrifice'])) | (hs25["KorBB"].isin(['Walk', 'Strikeout']))).astype(int)
@@ -309,7 +322,7 @@ def tracking_batter_hitrack():
 
     # ── 집계 ─────────────────────────────────────────────────────────────────
     result = (
-        hs25.groupby(["BatterId", "Batter", "BatterTeam", "BatterSide"])
+        hs25.groupby(['year', "BatterId", "Batter", "BatterTeam", "BatterSide"])
         .agg(
             투구수=("PitchCall",    "count"),
             타석=("is_pa",         "sum"),
@@ -340,7 +353,7 @@ def tracking_batter_hitrack():
     result["라인드라이브%"] = (result["라인드라이브"] / result["타구유형"] * 100).round(1)
     result["번트%"]        = (result["번트"]         / result["타구유형"] * 100).round(1)
 
-    stats = result[["BatterId", "Batter", "BatterTeam", "BatterSide", "투구수", "타석", "인플레이",
+    stats = result[['year', "BatterId", "Batter", "BatterTeam", "BatterSide", "투구수", "타석", "인플레이",
                     "최고타구속도", "평균타구속도", "평균발사각도", "최고비거리",
                     "하드힛%", "정타%", "배럴%", "스윗스팟%",
                     "땅볼%", "뜬공%", "라인드라이브%", "번트%"]]

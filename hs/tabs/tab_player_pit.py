@@ -15,9 +15,14 @@ import db_func as dbf
 def render():
     import db_func as dbf
     rslt = dbf.get_sql("""select * from hs_data""")
+    rslt = pd.DataFrame(rslt)
     master = dbf.get_sql("""select * from hs_profile""")
+    master = pd.DataFrame(master)
     
-    data = pd.merge(hs25, master.loc[:,['PLER_ID','PLER_NAME_KOR', 'BKNO', 'TEAM_NM'] ],  left_on='PitcherId', right_on='PLER_ID', how='left')
+    rslt['PitcherId'] = rslt['PitcherId'].astype(str)
+    master['PLER_TRKNG_ID'] = master['PLER_TRKNG_ID'].astype(str)
+    
+    data = pd.merge(rslt, master.loc[:,['PLER_TRKNG_ID','PLER_NAME', 'BKNO', 'TEAM_NM'] ],  left_on='PitcherId', right_on='PLER_TRKNG_ID', how='left')
     # 구종
     conditions = [
         (data['AutoPitchType'] == 'Four-Seam'),
@@ -82,30 +87,33 @@ def render():
     dict_colour = dict(zip(pitch_colours.keys(), [pitch_colours[key]['colour'] for key in pitch_colours]))
 
 
-    data["name_bk"] = data["PLER_NAME_KOR"] + "_" + data["BKNO"]
+    data["name_bk"] = data["PLER_NAME"] + "_" + data["BKNO"]
+    data['year'] = pd.to_datetime(data['Date'], errors='coerce').dt.year
 
     st.sidebar.title('투수')
-
+    
+    select_year = st.sidebar.selectbox('확인하고 싶은 연도를 선택하세요',
+                                         sorted(data.year.dropna().unique()))
 
     select_school = st.sidebar.selectbox(
         '확인하고 싶은 학교를 선택하세요',
-        sorted(data.kor_teamname.dropna().unique())
+        sorted(data[(data.year == select_year)].TEAM_NM.dropna().unique())
     )
 
     select_pitcher = st.sidebar.selectbox(
         '확인하고 싶은 투수를 선택하세요',
-       sorted(data[data.kor_teamname == select_school].name_bk.dropna().unique())
+       sorted(data[(data.year == select_year) & (data.TEAM_NM == select_school)].name_bk.dropna().unique())
     )
 
     select_date = st.sidebar.multiselect(
         '확인하고 싶은 날짜를 선택하세요',
-        data[(data.name_bk == select_pitcher)].Date.unique()
+        data[(data.year == select_year) & (data.TEAM_NM == select_school) & (data.name_bk == select_pitcher)].Date.unique()
     )
 
     st.title(f'{select_pitcher} 투구 대시보드')
 
-    def track(Pitcher, School, Date):
-        pdata = data.loc[(data.name_bk == Pitcher) & (data.Date.isin(Date)) & (data.TEAM_NM == School)]
+    def track(Year, Pitcher, School, Date):
+        pdata = data.loc[(data.year == Year) & (data.name_bk == Pitcher) & (data.Date.isin(Date)) & (data.TEAM_NM == School),:]
 
         table = pdata.groupby('구종')[['Date', '구속', '회전수', '회전축', '수직 무브먼트', '수평 무브먼트', '릴리스 높이', '릴리스 사이드', '익스텐션']].agg({'Date': 'count', '구속': ['mean', 'max'], '회전수': 'mean', '회전축':'mean',
         '수직 무브먼트': 'mean', '수평 무브먼트': 'mean', '릴리스 높이': 'mean', '릴리스 사이드': 'mean', '익스텐션': 'mean'}).dropna().round(1)
@@ -134,8 +142,8 @@ def render():
         
         return table
 
-    def movement(Pitcher, School, Date):
-        pdata = data.loc[(data.name_bk == Pitcher) & (data.Date.isin(Date)) & (data.TEAM_NM == School)]
+    def movement(Year, Pitcher, School, Date):
+        pdata = data.loc[(data.year == Year) & (data.name_bk == Pitcher) & (data.Date.isin(Date)) & (data.TEAM_NM == School),:]
         pdata = pdata.sort_values(by=['구종'])
 
         order = ['직구', '싱커', '커터', '슬라이더', '체인지업', '스플리터', '커브', '너클']
@@ -163,8 +171,8 @@ def render():
 
         return fig
 
-    def release(Pitcher, School, Date):
-        pdata = data.loc[(data.name_bk == Pitcher) & (data.Date.isin(Date)) & (data.kor_teamname == School)]
+    def release(Year, Pitcher, School, Date):
+        pdata = data.loc[(data.year == Year) & (data.name_bk == Pitcher) & (data.Date.isin(Date)) & (data.TEAM_NM == School),:]
         pdata = pdata.sort_values(by=['구종'])
 
         
@@ -193,8 +201,8 @@ def render():
 
         return fig
 
-    def location(Pitcher, School, Date):
-        pdata = data.loc[(data.name_bk == Pitcher) & (data.Date.isin(Date)) & (data.TEAM_NM == School)]
+    def location(Year, Pitcher, School, Date):
+        pdata = data.loc[(data.year == Year) & (data.name_bk == Pitcher) & (data.Date.isin(Date)) & (data.TEAM_NM == School),:]
         pdata = pdata.sort_values(by=['구종'])
         
         L, R = -0.708333 * 30.48, +0.708333 * 30.48
@@ -253,14 +261,15 @@ def render():
         fig.add_trace(go.Scatter(x=[R_m, L_p, L_m, Center, R_p, R_m], y=[S_height, S_height, M_height, E_height, M_height, S_height], showlegend=False, marker_color = 'black'), row="all", col="all")
         return fig
     
-    def location2(Pitcher, School, Date):
+    def location2(Year, Pitcher, School, Date):
         import matplotlib.pyplot as plt
         import seaborn as sns
     
         pdata = data.loc[
             (data.name_bk == Pitcher) &
             (data.Date.isin(Date)) &
-            (data.kor_teamname == School)
+            (data.TEAM_NM == School) &
+            (data.year == Year)
         ].copy()
     
         # 데이터가 없을 경우 처리
@@ -343,11 +352,11 @@ def render():
         g.fig.set_size_inches(20, 5.5)
         return g.fig
 
-    result_table = track(select_pitcher, select_school, select_date)
-    result_movement = movement(select_pitcher, select_school, select_date)
-    result_rlse_point = release(select_pitcher, select_school, select_date)
-    result_location = location(select_pitcher, select_school, select_date)
-    result_location2 = location2(select_pitcher, select_school, select_date)
+    result_table = track(select_year, select_pitcher, select_school, select_date)
+    result_movement = movement(select_year, select_pitcher, select_school, select_date)
+    result_rlse_point = release(select_year, select_pitcher, select_school, select_date)
+    result_location = location(select_year, select_pitcher, select_school, select_date)
+    result_location2 = location2(select_year, select_pitcher, select_school, select_date)
     
     
     st.subheader('구종별 트래킹')

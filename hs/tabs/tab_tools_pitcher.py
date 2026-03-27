@@ -66,7 +66,7 @@ def _calc_pitcher_stats(df: pd.DataFrame) -> pd.DataFrame:
     fb_col       = df.get("TaggedPitchType", df.get("AutoPitchType", pd.Series("", index=df.index)))
     df["_is_fb"] = fb_col.isin(_FB_TYPES)
 
-    g       = df.groupby(["PitcherId", "Pitcher"])
+    g       = df.groupby(['year',"PitcherId", "Pitcher"])
     pitches = g["RelSpeed_n"].count()
     pa      = g["_pa"].sum()
     swing_n = g["_swing"].sum()
@@ -74,8 +74,8 @@ def _calc_pitcher_stats(df: pd.DataFrame) -> pd.DataFrame:
 
     fb_df = df[df["_is_fb"]]
     if len(fb_df) > 0:
-        velo_mean = fb_df.groupby(["PitcherId", "Pitcher"])["RelSpeed_n"].mean()
-        spin_mean = fb_df.groupby(["PitcherId", "Pitcher"])["SpinRate_n"].mean()
+        velo_mean = fb_df.groupby(['year',"PitcherId", "Pitcher"])["RelSpeed_n"].mean()
+        spin_mean = fb_df.groupby(['year', "PitcherId", "Pitcher"])["SpinRate_n"].mean()
     else:
         velo_mean = g["RelSpeed_n"].mean()
         spin_mean = g["SpinRate_n"].mean()
@@ -140,7 +140,7 @@ RADAR_COLS = {
     "헛스윙\n(Whiff)":  "scale_whiff",
     "존투구\n(Zone)":   "scale_zone",
     "볼넷 억제\n(BB↓)": "scale_bb",
-    "체이스\n유도":      "scale_chase",
+    "존밖\n반응":      "scale_chase",
 }
 
 _STUFF_CATS    = ["구속\n(Velo)", "회전수\n(Spin)", "헛스윙\n(Whiff)"]
@@ -241,8 +241,16 @@ def _style_grade(val):
 def _render_radar(grade_df: pd.DataFrame, display_df: pd.DataFrame):
     _sec(f"투수 툴 스카우팅 레이더 (20-80 스케일 · 최소 {MIN_PITCHES}구 이상)")
 
-    c1, c2 = st.columns([2, 5])
+    c1, c2, c3 = st.columns([1, 1, 3])
     with c1:
+        year_opts = ["전체"] + sorted(display_df["year"].dropna().unique().tolist())
+        year_sel  = st.selectbox("연도 필터", year_opts, key="pt_r_year")
+
+    filtered = display_df.copy()
+    if year_sel != "전체":
+        filtered = filtered[filtered["year"] == year_sel]
+    
+    with c2:
         school_opts = ["전체"] + sorted(display_df["TEAM_NM"].dropna().unique().tolist())
         school_sel  = st.selectbox("학교 필터", school_opts, key="pt_r_school")
 
@@ -252,7 +260,7 @@ def _render_radar(grade_df: pd.DataFrame, display_df: pd.DataFrame):
 
     with c2:
         player_map  = {
-            row["PitcherId"]: f"{row['PLER_NAME_KOR']}  ({row.get('TEAM_NM','—')})"
+            row["PitcherId"]: f"{row['PLER_NAME']}  ({row.get('TEAM_NM','—')})"
             for _, row in filtered.iterrows()
         }
         sorted_keys = sorted(player_map.keys(), key=lambda x: player_map[x])
@@ -263,10 +271,6 @@ def _render_radar(grade_df: pd.DataFrame, display_df: pd.DataFrame):
             default=sorted_keys[:min(1, len(sorted_keys))],
             max_selections=6, key="pt_r_players",
         )
-
-    if not selected:
-        st.info("선수를 1명 이상 선택하세요.")
-        return
 
     fig = _draw_radar(grade_df, selected)
     st.plotly_chart(fig, use_container_width=True)
@@ -286,7 +290,7 @@ def _render_radar(grade_df: pd.DataFrame, display_df: pd.DataFrame):
     for i, pid in enumerate(selected):
         row  = grade_df[grade_df["PitcherId"] == pid].iloc[0]
         prow = display_df[display_df["PitcherId"] == pid].iloc[0]
-        name  = prow.get("PLER_NAME_KOR", row["Pitcher"])
+        name  = prow.get("PLER_NAME", row["Pitcher"])
         team  = prow.get("TEAM_NM", "—")
         color = _PLAYER_COLORS[i % len(_PLAYER_COLORS)]
 
@@ -388,16 +392,19 @@ _IMPUTED_TO_COL = {
 def _render_table(grade_df: pd.DataFrame, display_df: pd.DataFrame):
     _sec(f"전체 투수 종합 성적표  ·  {MIN_PITCHES}구 이상")
 
-    c1, c2, c3 = st.columns([2, 2, 1])
+    c1, c2, c3, c4 = st.columns([2, 2, 1, 1])
     with c1:
-        opts       = ["전체"] + sorted(display_df["TEAM_NM"].dropna().unique().tolist())
-        school_sel = st.selectbox("학교 필터", opts, key="pt_t_school")
+        year_opts = ["전체"] + sorted(display_df["year"].dropna().unique().tolist())
+        year_sel = st.selectbox("연도 필터", year_opts, key="pt_t_year")
     with c2:
+        school_opts = ["전체"] + sorted(display_df["TEAM_NM"].dropna().unique().tolist())
+        school_sel = st.selectbox("학교 필터", school_opts, key="pt_t_school")
+    with c4:
         min_p = int(display_df["Pitches"].min())
         max_p = int(display_df["Pitches"].max())
         p_min = st.slider(f"최소 투구수 (기준 {MIN_PITCHES}구)",
                           min_p, max_p, min_p, key="pt_t_pitches")
-    with c3:
+    with c4:
         # PitcherThrows 는 우투/좌투 순서 고정
         if "PitcherThrows" in display_df.columns:
             hand_opts = ["전체", "우투", "좌투"]
@@ -406,14 +413,17 @@ def _render_table(grade_df: pd.DataFrame, display_df: pd.DataFrame):
         hand_sel = st.selectbox("투구 손", hand_opts, key="pt_t_hand")
 
     df = display_df.copy()
+    if year_sel != "전체" and "year" in df.columns:
+        df = df[df["year"] == year_sel]    
     if school_sel != "전체":
         df = df[df["TEAM_NM"] == school_sel]
     if hand_sel != "전체" and "PitcherThrows" in df.columns:
-        df = df[df["PitcherThrows"] == hand_sel]
+        df = df[df["PitcherThrows"] == hand_sel]   
+    
     df = df[df["Pitches"] >= p_min].sort_values("Grade", ascending=False)
 
     col_map = {
-        "PLER_NAME_KOR":   "선수명",
+        "PLER_NAME":   "선수명",
         "TEAM_NM":  "학교",
         "PitcherThrows": "투구손",
         "Pitches":       "투구수",
@@ -473,12 +483,12 @@ def _render_table(grade_df: pd.DataFrame, display_df: pd.DataFrame):
 
     # ── 하단 주석 박스 ────────────────────────────────────────────────────────
     if "_imputed" in show_df.columns:
-        imp_src = df[["PLER_NAME_KOR", "imputed_cols"]].reset_index(drop=True)
+        imp_src = df[["PLER_NAME", "imputed_cols"]].reset_index(drop=True)
         imp_src = imp_src[imp_src["imputed_cols"].str.len() > 0]
         if not imp_src.empty:
             items = "".join([
                 f'<div style="margin:.15rem 0;font-size:.78rem">'
-                f'<span style="color:#fbbf24;font-weight:600">{row["PLER_NAME_KOR"]}</span>'
+                f'<span style="color:#fbbf24;font-weight:600">{row["PLER_NAME"]}</span>'
                 f'<span style="color:#6b7280"> — </span>'
                 f'<span style="color:#9ca3af">'
                 + ", ".join(f'{lbl}*' for lbl in row["imputed_cols"].split(", ")) +
@@ -512,12 +522,12 @@ def render(players_df: pd.DataFrame, p_tools_df: pd.DataFrame, b_tools_df):
         return
 
     # ── 프로필 병합 ────────────────────────────────────────────────────────────
-    prof_cols = [c for c in ["PLER_ID",'PLER_NAME_KOR',"TEAM_NM"]
+    prof_cols = [c for c in ["PLER_TRKNG_ID",'PLER_NAME',"TEAM_NM"]
                  if c in players_df.columns]
     display_df = pd.merge(
         grade_df,
         players_df[prof_cols],
-        left_on="PitcherId", right_on="PLER_ID", how="left",
+        left_on="PitcherId", right_on="PLER_TRKNG_ID", how="left",
     )
 
     # ── PitcherThrows: Right/Left → 우투/좌투, 순서 고정 ─────────────────────
@@ -534,7 +544,7 @@ def render(players_df: pd.DataFrame, p_tools_df: pd.DataFrame, b_tools_df):
         display_df = pd.merge(display_df, hand, on="PitcherId", how="left")
 
     # fallback
-    if "PLER_NAME_KOR"  not in display_df.columns: display_df["PLER_NAME_KOR"]  = display_df["Pitcher"]
+    if "PLER_NAME"  not in display_df.columns: display_df["PLER_NAME"]  = display_df["Pitcher"]
     if "TEAM_NM" not in display_df.columns: display_df["TEAM_NM"] = "—"
 
     # ── 서브탭 ────────────────────────────────────────────────────────────────

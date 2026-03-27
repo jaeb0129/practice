@@ -4,8 +4,7 @@ import pandas as pd
 def render(data, profile):
     st.markdown('<p class="section-title">투수 데이터</p>', unsafe_allow_html=True)
     
-    p_data = pd.merge(data, profile.loc[:,['PLER_ID','PLER_NAME_KOR', 'BKNO', 'TEAM_NM'] ], left_on='PitcherId', right_on='PLER_ID', how='left')
-
+    p_data = pd.merge(data, profile.loc[:,['PLER_TRKNG_ID','PLER_NAME', 'BKNO', 'TEAM_NM'] ], left_on='PitcherId', right_on='PLER_TRKNG_ID', how='left')
     # ── 필터 ──
     st.markdown('<div class="filter-bar">', unsafe_allow_html=True)
     col1, col2, col3 = st.columns([2, 2, 1])
@@ -17,18 +16,20 @@ def render(data, profile):
         max_p = int(p_data["투구수"].max())
         pitch_range = st.slider("최소 투구수", min_p, max_p, min_p, key="p_pitches")
     with col3:
+        year_opts = ["전체"] + sorted(p_data["year"].unique().tolist())
+        year_sel = st.selectbox("연도 필터", year_opts, key="p_year")
         st.markdown("<br>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     df = p_data.copy()
     if school_sel != "전체":
-        df = df[df["TEAM_NM"] == school_sel]
+        df = df[(df["TEAM_NM"] == school_sel) & (df["year"] == year_sel)]
     df = df[df["투구수"] >= pitch_range]
 
     # ── 메인 테이블 ──
     st.markdown('<p class="section-title">투수 타석 접근법</p>', unsafe_allow_html=True)
     col_map = {
-    "PLER_NAME_KOR":  "선수명",
+    "PLER_NAME":  "선수명",
     "TEAM_NM": "학교",
     "PitcherThrows": "투구손",
     "투구수":        "투구수",
