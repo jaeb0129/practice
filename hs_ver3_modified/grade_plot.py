@@ -16,10 +16,13 @@ import matplotlib.font_manager as fm
 import matplotlib as mpl
 
 def setup_fonts():
-    font_dir = "./fonts"
-    font_path = os.path.join(font_dir, "NanumGothic.ttf")
+
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    font_path = os.path.join(current_dir, "..", "fonts", "NanumGothic.ttf")
+    font_path = os.path.normpath(font_path) 
     fm.fontManager.addfont(font_path)
     font_name = fm.FontProperties(fname=font_path).get_name()
+    print("실제 적용 폰트 이름:", font_name)
     mpl.rcParams["font.family"] = font_name
     mpl.rcParams["axes.unicode_minus"] = False
     return font_name
