@@ -10,12 +10,6 @@ import matplotlib.font_manager as fm
 def setup_fonts():
     font_dir = "../fonts"
     font_path = os.path.join(font_dir, "NanumGothic.ttf")
-    if not os.path.exists(font_path):
-        raise FileNotFoundError(
-            """f"폰트 파일이 없습니다: {font_path}
-"
-            "폰트 파일을 직접 프로젝트에 업로드하세요."""
-        )
     fm.fontManager.addfont(font_path)
     font_name = fm.FontProperties(fname=font_path).get_name()
     mpl.rcParams["font.family"] = font_name
