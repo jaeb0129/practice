@@ -17,6 +17,10 @@ def render():
     base = pd.merge(rslt, master.loc[:,['PLER_TRKNG_ID','PLER_NAME', 'BKNO', 'TEAM_NM']],
                     left_on='BatterId', right_on='PLER_TRKNG_ID', how='left')
     base = base[base["TEAM_NM"].notna()]
+
+    base["BKNO"] = base["BKNO"].apply(
+    lambda x: str(int(float(x))) if pd.notnull(x) else "")
+    
     base["name_bk"] = base["PLER_NAME"] + "_" + base["BKNO"].astype(str)
     base['year'] = pd.to_datetime(base['Date'], errors='coerce').dt.year
 
