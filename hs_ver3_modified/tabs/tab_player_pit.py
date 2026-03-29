@@ -8,7 +8,7 @@ from data_loader import get_raw_df, get_master_df
 import matplotlib.font_manager as fm
 
 def setup_fonts():
-    font_dir = "./fonts"
+    font_dir = "../fonts"
     font_path = os.path.join(font_dir, "NanumGothic.ttf")
     if not os.path.exists(font_path):
         raise FileNotFoundError(
