@@ -5,6 +5,7 @@ import os
 import plotly.express as px
 import plotly.graph_objects as go
 from data_loader import get_raw_df, get_master_df
+import urllib.request
 
 @st.cache_resource
 def setup_fonts():
