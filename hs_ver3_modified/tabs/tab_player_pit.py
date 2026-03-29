@@ -6,6 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from data_loader import get_raw_df, get_master_df
 import matplotlib.font_manager as fm
+import matplotlib as mpl
 
 def setup_fonts():
     
