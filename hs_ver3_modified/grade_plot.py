@@ -69,14 +69,13 @@ custom_order_dict = {pitch: index for index, pitch in enumerate(required_pitch_t
 def stuff_plot(df, 투수ID:int, 선수명:str):
 
     # 한글 폰트 설정 (예시: 'Malgun Gothic', 'AppleGothic' 등 OS에 맞게 선택)
-    mpl.rcParams['font.family'] = 'Malgun Gothic'   # 윈도우
-    # mpl.rcParams['font.family'] = 'AppleGothic'   # 맥
+    mpl.rcParams['font.family'] = 'NanumGothic'   # 윈도우
 
     # 마이너스(-) 깨짐 방지
     mpl.rcParams['axes.unicode_minus'] = False
 
     sns.set_style("ticks")
-    mpl.rcParams['font.family'] = 'Malgun Gothic'
+    mpl.rcParams['font.family'] = 'NanumGothic'
     mpl.rcParams['axes.unicode_minus'] = False
     
     # Create the figure and GridSpec layout
@@ -222,15 +221,13 @@ def stuff_plot(df, 투수ID:int, 선수명:str):
 
 def location_plot(df, 투수ID:int, 선수명:str):
 
-    # 한글 폰트 설정 (예시: 'Malgun Gothic', 'AppleGothic' 등 OS에 맞게 선택)
-    mpl.rcParams['font.family'] = 'Malgun Gothic'   # 윈도우
-    # mpl.rcParams['font.family'] = 'AppleGothic'   # 맥
+    mpl.rcParams['font.family'] = 'NanumGothic'   # 윈도우
 
     # 마이너스(-) 깨짐 방지
     mpl.rcParams['axes.unicode_minus'] = False
 
     sns.set_style("ticks")
-    mpl.rcParams['font.family'] = 'Malgun Gothic'
+    mpl.rcParams['font.family'] = 'NanumGothic'
     mpl.rcParams['axes.unicode_minus'] = False
     
     # Create the figure and GridSpec layout
@@ -376,15 +373,13 @@ def location_plot(df, 투수ID:int, 선수명:str):
     
 def pitching_plot(df, 투수ID:int, 선수명:str):
 
-    # 한글 폰트 설정 (예시: 'Malgun Gothic', 'AppleGothic' 등 OS에 맞게 선택)
-    mpl.rcParams['font.family'] = 'Malgun Gothic'   # 윈도우
-    # mpl.rcParams['font.family'] = 'AppleGothic'   # 맥
+    mpl.rcParams['font.family'] = 'NanumGothic'   # 윈도우
 
     # 마이너스(-) 깨짐 방지
     mpl.rcParams['axes.unicode_minus'] = False
 
     sns.set_style("ticks")
-    mpl.rcParams['font.family'] = 'Malgun Gothic'
+    mpl.rcParams['font.family'] = 'NanumGothic'
     mpl.rcParams['axes.unicode_minus'] = False
     
     # Create the figure and GridSpec layout
