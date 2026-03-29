@@ -68,14 +68,14 @@ custom_order_dict = {pitch: index for index, pitch in enumerate(required_pitch_t
 
 def stuff_plot(df, 투수ID:int, 선수명:str):
 
-    mpl.rcParams['font.family'] = 'NanumGothic'   # 윈도우
+    #mpl.rcParams['font.family'] = 'NanumGothic'   # 윈도우
 
     # 마이너스(-) 깨짐 방지
-    mpl.rcParams['axes.unicode_minus'] = False
+    #mpl.rcParams['axes.unicode_minus'] = False
 
     sns.set_style("ticks")
-    mpl.rcParams['font.family'] = 'NanumGothic'
-    mpl.rcParams['axes.unicode_minus'] = False
+    #mpl.rcParams['font.family'] = 'NanumGothic'
+    #mpl.rcParams['axes.unicode_minus'] = False
     
     # Create the figure and GridSpec layout
     fig = plt.figure(figsize=(10, 8), dpi=450)
@@ -220,14 +220,14 @@ def stuff_plot(df, 투수ID:int, 선수명:str):
 
 def location_plot(df, 투수ID:int, 선수명:str):
 
-    mpl.rcParams['font.family'] = 'NanumGothic'   # 윈도우
+    #mpl.rcParams['font.family'] = 'NanumGothic'   # 윈도우
 
     # 마이너스(-) 깨짐 방지
-    mpl.rcParams['axes.unicode_minus'] = False
+    #mpl.rcParams['axes.unicode_minus'] = False
 
     sns.set_style("ticks")
-    mpl.rcParams['font.family'] = 'NanumGothic'
-    mpl.rcParams['axes.unicode_minus'] = False
+    #mpl.rcParams['font.family'] = 'NanumGothic'
+    #mpl.rcParams['axes.unicode_minus'] = False
     
     # Create the figure and GridSpec layout
     fig = plt.figure(figsize=(10, 8), dpi=450)
@@ -372,14 +372,14 @@ def location_plot(df, 투수ID:int, 선수명:str):
     
 def pitching_plot(df, 투수ID:int, 선수명:str):
 
-    mpl.rcParams['font.family'] = 'NanumGothic'   # 윈도우
+    #mpl.rcParams['font.family'] = 'NanumGothic'   # 윈도우
 
     # 마이너스(-) 깨짐 방지
-    mpl.rcParams['axes.unicode_minus'] = False
+    #mpl.rcParams['axes.unicode_minus'] = False
 
     sns.set_style("ticks")
-    mpl.rcParams['font.family'] = 'NanumGothic'
-    mpl.rcParams['axes.unicode_minus'] = False
+    #mpl.rcParams['font.family'] = 'NanumGothic'
+    #mpl.rcParams['axes.unicode_minus'] = False
     
     # Create the figure and GridSpec layout
     fig = plt.figure(figsize=(10, 8), dpi=450)
