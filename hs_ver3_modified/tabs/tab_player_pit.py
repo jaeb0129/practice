@@ -76,8 +76,10 @@ def render():
 
     # Create a dictionary mapping pitch types to their colors
     dict_colour = dict(zip(pitch_colours.keys(), [pitch_colours[key]['colour'] for key in pitch_colours]))
-
-
+    
+    data["BKNO"] = data["BKNO"].apply(
+    lambda x: str(int(float(x))) if pd.notnull(x) else "")
+    
     data["name_bk"] = data["PLER_NAME"] + "_" + data["BKNO"].astype(str)
     data['year'] = pd.to_datetime(data['Date'], errors='coerce').dt.year
 
