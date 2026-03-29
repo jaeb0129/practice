@@ -15,18 +15,20 @@ import streamlit as st
 import matplotlib.font_manager as fm
 import matplotlib as mpl
 
-@st.cache_resource
 def setup_fonts():
     font_dir = "./fonts"
     font_path = os.path.join(font_dir, "NanumGothic.ttf")
-    os.makedirs(font_dir, exist_ok=True)
     if not os.path.exists(font_path):
-        url = "https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic.ttf"
-        urllib.request.urlretrieve(url, font_path)
+        raise FileNotFoundError(
+            f"폰트 파일이 없습니다: {font_path}
+"
+            "폰트 파일을 직접 프로젝트에 업로드하세요."
+        )
     fm.fontManager.addfont(font_path)
     font_name = fm.FontProperties(fname=font_path).get_name()
-
     mpl.rcParams["font.family"] = font_name
+    mpl.rcParams["axes.unicode_minus"] = False
+    return font_name
 
 setup_fonts()
 
