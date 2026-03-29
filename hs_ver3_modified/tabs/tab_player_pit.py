@@ -341,7 +341,7 @@ def render():
     
         import matplotlib
         matplotlib.rcParams['axes.unicode_minus'] = False
-        plt.rc('font', family='Malgun Gothic')
+        $plt.rc('font', family='Malgun Gothic')
         plt.rc('figure', titlesize=20)
         plt.figure(figsize=(10, 10), dpi=100)
     
