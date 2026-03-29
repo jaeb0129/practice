@@ -68,7 +68,6 @@ custom_order_dict = {pitch: index for index, pitch in enumerate(required_pitch_t
 
 def stuff_plot(df, 투수ID:int, 선수명:str):
 
-    # 한글 폰트 설정 (예시: 'Malgun Gothic', 'AppleGothic' 등 OS에 맞게 선택)
     mpl.rcParams['font.family'] = 'NanumGothic'   # 윈도우
 
     # 마이너스(-) 깨짐 방지
@@ -211,7 +210,7 @@ def stuff_plot(df, 투수ID:int, 선수명:str):
     ax2.text(x=0.5, y=0.6, s='Stuff+는 구종 상관 없이 동등하게 Expected Run Value (xRV, 기대 득점 가치) 비교한 값\n'
                             'Stuff+는 평균: 100, 표준편차: 10인 정규분포\n'
                             '구종 점수는 구종별로 20-80스케일 적용해 구종 내에서 비교한 점수 (최소값: 20, 최대값: 80, 평균: 50, 표준편차: 10)',
-                            ha='center', va='top', fontname='Malgun Gothic', fontsize=10)
+                            ha='center', va='top', fontname='NanumGothic', fontsize=10)
 
     # Adjust subplot layout
     fig.subplots_adjust(left=0.03, right=0.97, top=0.97, bottom=0.03)
@@ -363,7 +362,7 @@ def location_plot(df, 투수ID:int, 선수명:str):
     ax2.text(x=0.5, y=0.6, s='Location+는 구종 상관 없이 동등하게 Expected Run Value (xRV, 기대 득점 가치) 비교한 값\n'
                             'Location+는 평균: 100, 표준편차: 10인 정규분포\n'
                             '구종 점수는 구종별로 20-80스케일 적용해 구종 내에서 비교한 점수 (최소값: 20, 최대값: 80, 평균: 50, 표준편차: 10)',
-                            ha='center', va='top', fontname='Malgun Gothic', fontsize=10)
+                            ha='center', va='top', fontname='NanumGothic', fontsize=10)
 
     # Adjust subplot layout
     fig.subplots_adjust(left=0.03, right=0.97, top=0.97, bottom=0.03)
@@ -515,7 +514,7 @@ def pitching_plot(df, 투수ID:int, 선수명:str):
     ax2.text(x=0.5, y=0.6, s='Pitching+는 구종 상관 없이 동등하게 Expected Run Value (xRV, 기대 득점 가치) 비교한 값\n'
                             'Pitching+는 평균: 100, 표준편차: 10인 정규분포\n'
                             '구종 점수는 구종별로 20-80스케일 적용해 구종 내에서 비교한 점수 (최소값: 20, 최대값: 80, 평균: 50, 표준편차: 10)',
-                            ha='center', va='top', fontname='Malgun Gothic', fontsize=10)
+                            ha='center', va='top', fontname='NanumGothic', fontsize=10)
 
     # Adjust subplot layout
     fig.subplots_adjust(left=0.03, right=0.97, top=0.97, bottom=0.03)
