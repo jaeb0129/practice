@@ -14,6 +14,7 @@ from matplotlib.gridspec import GridSpec
 import streamlit as st
 import matplotlib.font_manager as fm
 import matplotlib as mpl
+import urllib.request
 
 @st.cache_resource
 def setup_fonts():
