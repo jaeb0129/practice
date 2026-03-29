@@ -6,6 +6,21 @@ import plotly.express as px
 import plotly.graph_objects as go
 from data_loader import get_raw_df, get_master_df
 
+@st.cache_resource
+def setup_fonts():
+    font_dir = "./fonts"
+    font_path = os.path.join(font_dir, "NanumGothic.ttf")
+    os.makedirs(font_dir, exist_ok=True)
+    if not os.path.exists(font_path):
+        url = "https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic.ttf"
+        urllib.request.urlretrieve(url, font_path)
+    fm.fontManager.addfont(font_path)
+    font_name = fm.FontProperties(fname=font_path).get_name()
+
+    mpl.rcParams["font.family"] = font_name
+
+setup_fonts()
+
 def render():
     rslt = get_raw_df()
     master = get_master_df()
