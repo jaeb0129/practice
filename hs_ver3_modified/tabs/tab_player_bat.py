@@ -285,6 +285,7 @@ def render():
 
         #fig.add_trace(go.Scatter(x=[40, 0], y=[80, -80], mode='lines', line=dict(color='red'), showlegend=False))
         #fig.add_trace(go.Scatter(x=[80, -80], y=[0, 0], mode='lines', line=dict(color='red'), showlegend=False))
+        fig.update_layout(template='simple_white', height=700, width=900, legend_title_text='타구 결과')
 
         return fig
     
