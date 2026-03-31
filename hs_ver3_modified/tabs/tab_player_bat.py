@@ -202,6 +202,9 @@ def render():
         'Sacrifice': 'gray'
 
         }
+
+        # 범례 순서 지정
+        category_order = ['Single', 'Double', 'Triple', 'HomeRun', 'Out', 'Error', 'Sacrifice']
         
         # Plotly scatter plot
         fig = px.scatter(
@@ -210,6 +213,7 @@ def render():
             y='hc_y',
             color='PlayResult',
             color_discrete_map=color_dict,
+            category_orders={'PlayResult': category_order},
             labels={
                 'hc_x': '수평 낙하지점',
                 'hc_y': '수직 낙하지점',
@@ -257,11 +261,15 @@ def render():
 
         }
 
+        # 범례 순서 지정
+        category_order = ['Single', 'Double', 'Triple', 'HomeRun', 'Out', 'Error', 'Sacrifice']
+
         fig = px.scatter(data_frame=filtered , 
                      x='ExitSpeed', 
                      y='Angle',
                      color='PlayResult',
-                     color_discrete_map=color_dict)
+                     color_discrete_map=color_dict,
+                     category_orders={'PlayResult': category_order})
 
         fig.update_layout(xaxis=dict(range=[40, 200], dtick=10, autorange=False, tickfont=dict(size=10)),
                           yaxis=dict(range=[-80, 80], dtick=10, tickfont=dict(size=10)),
