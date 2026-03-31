@@ -260,6 +260,7 @@ def render():
         fig = px.scatter(data_frame=filtered , 
                      x='ExitSpeed', 
                      y='Angle',
+                     size = 4,
                      color='PlayResult',
                      color_discrete_map=color_dict)
 
