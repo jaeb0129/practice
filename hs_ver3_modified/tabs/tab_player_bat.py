@@ -280,6 +280,9 @@ def render():
         
         fig.update_traces(marker=dict(size=15))
 
+        fig.update_xaxes(title_text="타구속도")
+        fig.update_yaxes(title_text="발사각도")
+
         #fig.add_trace(go.Scatter(x=[40, 0], y=[80, -80], mode='lines', line=dict(color='red'), showlegend=False))
         #fig.add_trace(go.Scatter(x=[80, -80], y=[0, 0], mode='lines', line=dict(color='red'), showlegend=False))
 
