@@ -260,7 +260,6 @@ def render():
         fig = px.scatter(data_frame=filtered , 
                      x='ExitSpeed', 
                      y='Angle',
-                     size = 4,
                      color='PlayResult',
                      color_discrete_map=color_dict)
 
@@ -270,6 +269,8 @@ def render():
                           width=700,
                           height=700,
                          title=f"타구 조합", title_x=0)
+        
+        fig.update_traces(marker=dict(size=15))
 
         #fig.add_trace(go.Scatter(x=[40, 0], y=[80, -80], mode='lines', line=dict(color='red'), showlegend=False))
         #fig.add_trace(go.Scatter(x=[80, -80], y=[0, 0], mode='lines', line=dict(color='red'), showlegend=False))
