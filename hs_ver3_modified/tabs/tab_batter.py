@@ -14,8 +14,8 @@ def render(data, profile):
         school_opts = ["전체"] + sorted(b_data["TEAM_NM"].unique().tolist())
         school_sel = st.selectbox("학교 필터", school_opts, key="b_school")
     with col2:
-        min_pa = int(b_data["타석"].dropna().min())
-        max_pa = int(b_data["타석"].dropna().max())
+        min_pa = 0
+        max_pa = 200
         pa_min = st.slider("최소 타석수", min_pa, max_pa, min_pa, key="b_pa")
     with col3:
         year_opts = ["전체"] + sorted(b_data["year"].unique().tolist())
@@ -99,8 +99,8 @@ def render2(data, profile):
         school_opts = ["전체"] + sorted(b_data["TEAM_NM"].unique().tolist())
         school_sel = st.selectbox("학교 필터", school_opts, key="b_school2")
     with col2:
-        min_pa = int(b_data["타석"].dropna().min())
-        max_pa = int(b_data["타석"].dropna().max())
+        min_pa = 0
+        max_pa = 200
         pa_min = st.slider("최소 타석수", min_pa, max_pa, min_pa, key="b_pa2")
     with col3:
         year_opts = ["전체"] + sorted(b_data["year"].unique().tolist())
