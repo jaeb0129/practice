@@ -26,8 +26,12 @@ def render():
     rslt = get_raw_df()
     master = get_master_df()
     
-    rslt['PitcherId'] = rslt['PitcherId'].astype(str)
-    master['PLER_TRKNG_ID'] = master['PLER_TRKNG_ID'].astype(str)
+    #rslt['PitcherId'] = rslt['PitcherId'].astype(str)
+    #master['PLER_TRKNG_ID'] = master['PLER_TRKNG_ID'].astype(str)
+
+    rslt = rslt[pd.to_numeric(rslt['PitcherId'], errors='coerce').notnull()]
+    rslt['PitcherId'] = rslt['PitcherId'].astype(float).astype(int)
+    master['PLER_TRKNG_ID'] = pd.to_numeric(master['PLER_TRKNG_ID'], errors='coerce').astype('Int64')
     
     data = pd.merge(rslt, master.loc[:,['PLER_TRKNG_ID','PLER_NAME', 'BKNO', 'TEAM_NM'] ],  left_on='PitcherId', right_on='PLER_TRKNG_ID', how='left')
     # 구종
