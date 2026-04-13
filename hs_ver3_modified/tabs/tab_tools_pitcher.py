@@ -557,6 +557,10 @@ def render(players_df: pd.DataFrame, p_tools_df: pd.DataFrame, b_tools_df):
     # ── 프로필 병합 ────────────────────────────────────────────────────────────
     prof_cols = [c for c in ["PLER_TRKNG_ID",'PLER_NAME',"TEAM_NM"]
                  if c in players_df.columns]
+
+    grade_df['PitcherId'] = grade_df['PitcherId'].astype(float).astype(int)
+    players_df['PLER_TRKNG_ID'] = pd.to_numeric(players_df['PLER_TRKNG_ID'], errors='coerce').astype('Int64')
+    
     display_df = pd.merge(
         grade_df,
         players_df[prof_cols],
@@ -574,6 +578,8 @@ def render(players_df: pd.DataFrame, p_tools_df: pd.DataFrame, b_tools_df):
         hand["PitcherThrows"] = pd.Categorical(
             hand["PitcherThrows"], categories=["우투", "좌투"], ordered=True
         )
+
+        hand['PitcherId'] = hand['PitcherId'].astype(float).astype(int)
         display_df = pd.merge(display_df, hand, on="PitcherId", how="left")
 
     # fallback
