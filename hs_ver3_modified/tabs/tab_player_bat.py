@@ -280,7 +280,7 @@ def render():
                           plot_bgcolor='whitesmoke',
                           width=700,
                           height=700,
-                         title=f"타구 조합", title_x=0, , legend_title_text='타구 결과')
+                          title=f"타구 조합", title_x=0, legend_title_text='타구 결과')
         
         fig.update_traces(marker=dict(size=15))
 
