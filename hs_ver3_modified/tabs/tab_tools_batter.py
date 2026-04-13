@@ -497,6 +497,9 @@ def render(players_df: pd.DataFrame, p_tools_df, b_tools_df: pd.DataFrame):
     # ── 프로필 병합 ────────────────────────────────────────────────────────────
     profile_cols = [c for c in ["PLER_TRKNG_ID","PLER_NAME","TEAM_NM"]
                     if c in players_df.columns]
+
+    grade_df['BatterId'] = grade_df['BatterId'].astype(float).astype(int)
+    players_df['PLER_TRKNG_ID'] = pd.to_numeric(players_df['PLER_TRKNG_ID'], errors='coerce').astype('Int64')
     display_df = pd.merge(
         grade_df,
         players_df[profile_cols],
