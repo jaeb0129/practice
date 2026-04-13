@@ -10,8 +10,12 @@ def render():
     rslt = get_raw_df()
     master = get_master_df()
     
-    rslt['BatterId'] = rslt['BatterId'].astype(str)
-    master['PLER_TRKNG_ID'] = master['PLER_TRKNG_ID'].astype(str)
+    #rslt['BatterId'] = rslt['BatterId'].astype(str)
+    #master['PLER_TRKNG_ID'] = master['PLER_TRKNG_ID'].astype(str)
+
+    rslt = rslt[pd.to_numeric(rslt['BatterId'], errors='coerce').notnull()]
+    rslt['BatterId'] = rslt['BatterId'].astype(float).astype(int)
+    master['PLER_TRKNG_ID'] = pd.to_numeric(master['PLER_TRKNG_ID'], errors='coerce').astype('Int64')
 
     # ── 공통 전처리 (한 번만) ──────────────────────────────────────────────────
     base = pd.merge(rslt, master.loc[:,['PLER_TRKNG_ID','PLER_NAME', 'BKNO', 'TEAM_NM']],
