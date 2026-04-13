@@ -3,6 +3,10 @@ import pandas as pd
 
 def render(data, profile):
     st.markdown('<p class="section-title">타자 데이터</p>', unsafe_allow_html=True)
+
+    data = data[pd.to_numeric(data['BatterId'], errors='coerce').notnull()]
+    data['BatterId'] = data['BatterId'].astype(float).astype(int)
+    profile['PLER_TRKNG_ID'] = pd.to_numeric(profile['PLER_TRKNG_ID'], errors='coerce').astype('Int64')
     
     b_data = pd.merge(data, profile.loc[:,['PLER_TRKNG_ID','PLER_NAME', 'BKNO', 'TEAM_NM'] ], left_on='BatterId', right_on='PLER_TRKNG_ID', how='left')
     b_data = b_data[b_data["TEAM_NM"].notna()]
@@ -88,6 +92,10 @@ def render(data, profile):
 
 def render2(data, profile):
     st.markdown('<p class="section-title">타자 데이터</p>', unsafe_allow_html=True)
+
+    data = data[pd.to_numeric(data['BatterId'], errors='coerce').notnull()]
+    data['BatterId'] = data['BatterId'].astype(float).astype(int)
+    profile['PLER_TRKNG_ID'] = pd.to_numeric(profile['PLER_TRKNG_ID'], errors='coerce').astype('Int64')
     
     b_data = pd.merge(data, profile.loc[:,['PLER_TRKNG_ID','PLER_NAME', 'BKNO', 'TEAM_NM']], left_on='BatterId', right_on='PLER_TRKNG_ID', how='left')
     b_data = b_data[b_data["TEAM_NM"].notna()]
