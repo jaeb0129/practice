@@ -3,6 +3,10 @@ import pandas as pd
 
 def render(data, profile):
     st.markdown('<p class="section-title">투수 데이터</p>', unsafe_allow_html=True)
+
+    data = data[pd.to_numeric(data['PitcherId'], errors='coerce').notnull()]
+    data['PitcherId'] = data['PitcherId'].astype(float).astype(int)
+    profile['PLER_TRKNG_ID'] = pd.to_numeric(profile['PLER_TRKNG_ID'], errors='coerce').astype('Int64')
     
     p_data = pd.merge(data, profile.loc[:,['PLER_TRKNG_ID','PLER_NAME', 'BKNO', 'TEAM_NM'] ], left_on='PitcherId', right_on='PLER_TRKNG_ID', how='left')
     # ── 필터 ──
