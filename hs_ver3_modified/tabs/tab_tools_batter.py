@@ -463,7 +463,7 @@ def _render_table(grade_df: pd.DataFrame, display_df: pd.DataFrame):
     styled = (
         show_df.style
         .format(pct_fmt)
-        .applymap(_style_grade, subset=["종합점수"])
+        .map(_style_grade, subset=["종합점수"])
         .set_table_styles([
             {"selector": "thead th", "props": [
                 ("background-color","#111827"), ("color","#7a8499"),
