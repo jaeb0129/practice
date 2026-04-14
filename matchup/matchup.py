@@ -447,7 +447,12 @@ def main():
     # Selection interface
     col1, col2 = st.columns([1, 1])
     
-    df = pd.read_csv(uploaded_file)
+    uploaded_file = st.file_uploader("CSV 파일을 업로드하세요", type="csv")
+    if uploaded_file is not None:
+        df = pd.read_csv(uploaded_file)
+        # 데이터 처리 코드
+    else:
+        st.warning("CSV 파일을 업로드해야 데이터가 표시됩니다.")
     available_pitchers = sorted(df['투수명_ID'].unique(), reverse=False)
     available_batters = sorted(df['타자명_ID'].unique(), reverse=False)
     
