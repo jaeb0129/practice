@@ -443,9 +443,18 @@ def run_silent_mac_analysis_multiple_pitchers(pitcher_names, target_hitters):
 def main():
     st.title("⚾ 투타 맞대결 분석")
 
-    # Selection interface
-    col1, col2 = st.columns([1, 1])
+    # --- 파일 업로드 및 데이터 준비 ---
+    st.subheader('파일 업로드(.csv)')
+    uploaded_file = st.file_uploader("파일 선택", type=["csv"])
 
+    if uploaded_file is not None:
+        df = pd.read_csv(uploaded_file)
+        df['투수명_ID'] = df['투수명'] + '_' + df['PCER_ID'].astype(str)
+        df['타자명_ID'] = df['타자명'] + '_' + df['BTER_ID'].astype(str)
+    else:
+        df = None
+
+    # --- 선수 리스트 준비 ---
     if df is not None:
         available_pitchers = sorted(df['투수명_ID'].unique())
         available_batters = sorted(df['타자명_ID'].unique())
@@ -453,13 +462,14 @@ def main():
         available_pitchers = []
         available_batters = []
 
+    # --- UI ---
+    col1, col2 = st.columns([1, 1])
     with col1:
         st.subheader("투수 선택")
         selected_pitchers = st.multiselect(
             "투수를 선택하세요:",
             available_pitchers
         )
-
     with col2:
         st.subheader("타자 선택")
         selected_hitters = st.multiselect(
