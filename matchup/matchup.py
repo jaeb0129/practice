@@ -35,7 +35,6 @@ if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
     df['투수명_ID'] = df['투수명'] + '_' + df['PCER_ID'].astype(str)
     df['타자명_ID'] = df['타자명'] + '_' + df['BTER_ID'].astype(str)
-    # df를 이후 분석에 사용하세요
 else:
     st.write("CSV 파일을 업로드해 주세요.")
 
@@ -441,14 +440,9 @@ def run_silent_mac_analysis_multiple_pitchers(pitcher_names, target_hitters):
 
     return results_concat, group_breakdown_concat, df_concat
 
-#run_silent_mac_analysis_multiple_pitchers(['네일_54640', '김택연_54263'], ['김지찬_50458', '양석환_64153', '김재환_78224'])
-#run_silent_mac_analysis('네일_54640', ['김지찬_50458', '양석환_64153', '김재환_78224'])
-
 
 def main():
     st.title("⚾ 투타 맞대결 분석")
-    df = pd.read_csv(uploaded_file)
-
     
     # Selection interface
     col1, col2 = st.columns([1, 1])
