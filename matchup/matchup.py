@@ -443,21 +443,6 @@ def run_silent_mac_analysis_multiple_pitchers(pitcher_names, target_hitters):
 
 def main():
     st.title("⚾ 투타 맞대결 분석")
-
-    uploaded_file = st.file_uploader(label="파일 선택", type=["csv"])
-
-df = None
-if uploaded_file is not None:
-    df = pd.read_csv(uploaded_file)
-    # 컬럼 체크 및 생성
-    required_cols = ['투수명', 'PCER_ID', '타자명', 'BTER_ID']
-    missing_cols = [col for col in required_cols if col not in df.columns]
-    if missing_cols:
-        st.error(f"다음 컬럼이 없습니다: {', '.join(missing_cols)}")
-        st.write("업로드된 컬럼 목록:", list(df.columns))
-    else:
-        df['투수명_ID'] = df['투수명'] + '_' + df['PCER_ID'].astype(str)
-        df['타자명_ID'] = df['타자명'] + '_' + df['BTER_ID'].astype(str)
     
     # Selection interface
     col1, col2 = st.columns([1, 1])
