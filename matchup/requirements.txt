@@ -8,3 +8,4 @@ seaborn
 openpyxl
 scipy
 scikit-learn
+kneed
