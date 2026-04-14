@@ -443,9 +443,9 @@ def run_silent_mac_analysis_multiple_pitchers(pitcher_names, target_hitters):
 def main():
     st.title("⚾ 투타 맞대결 분석")
 
-    # --- 파일 업로드 및 데이터 준비 ---
+    # 파일 업로드 (key 지정)
     st.subheader('파일 업로드(.csv)')
-    uploaded_file = st.file_uploader("파일 선택", type=["csv"])
+    uploaded_file = st.file_uploader("파일 선택", type=["csv"], key="main_file_uploader")
 
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
