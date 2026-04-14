@@ -451,9 +451,8 @@ def main():
     col1, col2 = st.columns([1, 1])
     
     if df is not None:
-      available_pitchers = sorted(df['투수명_ID'].unique())
-      available_batters = sorted(df['타자명_ID'].unique())
-    
+        available_pitchers = sorted(df['투수명_ID'].unique())
+        available_batters = sorted(df['타자명_ID'].unique())  
     
     with col1:
         st.subheader("투수 선택")
