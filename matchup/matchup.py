@@ -31,9 +31,15 @@ def get_sklearn_components():
 st.subheader('파일 업로드(.csv)')
 
 uploaded_file = st.file_uploader("파일 선택", type=["csv"])
-df = pd.read_csv(uploaded_file)
-df['투수명_ID'] = df['투수명'] + '_' + df['PCER_ID'].astype(str)
-df['타자명_ID'] = df['타자명'] + '_' + df['BTER_ID'].astype(str)
+
+if uploaded_file is not None:
+    df = pd.read_csv(uploaded_file)
+    # 이후 컬럼 생성 및 데이터 처리
+    df['투수명_ID'] = df['투수명'] + '_' + df['PCER_ID'].astype(str)
+    df['타자명_ID'] = df['타자명'] + '_' + df['BTER_ID'].astype(str)
+else:
+    df = None  # 파일이 없을 때 df는 None으로 처리
+    st.warning("CSV 파일을 업로드해야 데이터가 표시됩니다.")
 
 #df['투수명_ID'] = df['투수명'] +  '_' + df['PCER_ID'].astype(str)
 #df['타자명_ID'] = df['타자명'] +  '_' + df['BTER_ID'].astype(str)
@@ -444,8 +450,9 @@ def main():
     # Selection interface
     col1, col2 = st.columns([1, 1])
     
-    available_pitchers = sorted(df['투수명_ID'].unique(), reverse=False)
-    available_batters = sorted(df['타자명_ID'].unique(), reverse=False)
+    if df is not None:
+    available_pitchers = sorted(df['투수명_ID'].unique())
+    available_batters = sorted(df['타자명_ID'].unique())
     
     
     with col1:
