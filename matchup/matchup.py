@@ -31,12 +31,9 @@ def get_sklearn_components():
 st.subheader('파일 업로드(.csv)')
 
 uploaded_file = st.file_uploader("파일 선택", type=["csv"])
-if uploaded_file is not None:
-    df = pd.read_csv(uploaded_file)
-    df['투수명_ID'] = df['투수명'] + '_' + df['PCER_ID'].astype(str)
-    df['타자명_ID'] = df['타자명'] + '_' + df['BTER_ID'].astype(str)
-else:
-    st.write("CSV 파일을 업로드해 주세요.")
+df = pd.read_csv(uploaded_file)
+df['투수명_ID'] = df['투수명'] + '_' + df['PCER_ID'].astype(str)
+df['타자명_ID'] = df['타자명'] + '_' + df['BTER_ID'].astype(str)
 
 #df['투수명_ID'] = df['투수명'] +  '_' + df['PCER_ID'].astype(str)
 #df['타자명_ID'] = df['타자명'] +  '_' + df['BTER_ID'].astype(str)
