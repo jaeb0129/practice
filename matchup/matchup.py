@@ -41,8 +41,8 @@ else:
     df = None  # 파일이 없을 때 df는 None으로 처리
     st.warning("CSV 파일을 업로드해야 데이터가 표시됩니다.")
 
-#df['투수명_ID'] = df['투수명'] +  '_' + df['PCER_ID'].astype(str)
-#df['타자명_ID'] = df['타자명'] +  '_' + df['BTER_ID'].astype(str)
+df['투수명_ID'] = df['투수명'] +  '_' + df['PCER_ID'].astype(str)
+df['타자명_ID'] = df['타자명'] +  '_' + df['BTER_ID'].astype(str)
 
 distance_threshold = 0.6
 swing_calls = ["헛스윙", "파울", "타격"]
