@@ -447,6 +447,7 @@ def run_silent_mac_analysis_multiple_pitchers(pitcher_names, target_hitters):
 
 def main():
     st.title("⚾ 투타 맞대결 분석")
+    df = pd.read_csv(uploaded_file)
 
     
     # Selection interface
