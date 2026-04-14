@@ -447,6 +447,7 @@ def main():
     # Selection interface
     col1, col2 = st.columns([1, 1])
     
+    df = pd.read_csv(uploaded_file)
     available_pitchers = sorted(df['투수명_ID'].unique(), reverse=False)
     available_batters = sorted(df['타자명_ID'].unique(), reverse=False)
     
