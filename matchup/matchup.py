@@ -30,11 +30,16 @@ def get_sklearn_components():
 
 st.subheader('파일 업로드(.csv)')
 
-df = st.file_uploader(label="파일 선택", type=["csv"])
-#df = pd.read_csv('df.csv')
+uploaded_file = st.file_uploader("파일 선택", type=["csv"])
+if uploaded_file is not None:
+    df = pd.read_csv(uploaded_file)
+    df['투수명_ID'] = df['투수명'] + '_' + df['PCER_ID'].astype(str)
+    df['타자명_ID'] = df['타자명'] + '_' + df['BTER_ID'].astype(str)
+else:
+    st.write("CSV 파일을 업로드해 주세요.")
 
-df['투수명_ID'] = df['투수명'] +  '_' + df['PCER_ID'].astype(str)
-df['타자명_ID'] = df['타자명'] +  '_' + df['BTER_ID'].astype(str)
+#df['투수명_ID'] = df['투수명'] +  '_' + df['PCER_ID'].astype(str)
+#df['타자명_ID'] = df['타자명'] +  '_' + df['BTER_ID'].astype(str)
 
 distance_threshold = 0.6
 swing_calls = ["헛스윙", "파울", "타격"]
